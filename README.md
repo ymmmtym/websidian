@@ -30,6 +30,16 @@ scripts/sync-from-vault.sh  Vault → content/ の同期スクリプト
 npm ci
 ```
 
+開発用コマンド:
+
+| コマンド                   | 内容                                          |
+| -------------------------- | --------------------------------------------- |
+| `npx quartz build`         | 本番ビルド（`public/` に出力）                |
+| `npx quartz build --serve` | プレビューサーバー（<http://localhost:8080>） |
+| `npm test`                 | Quartz 本体のユニットテスト                   |
+| `npm run check`            | 型チェック（tsc）と整形チェック（prettier）   |
+| `npm run format`           | prettier で自動整形                           |
+
 ## ノートを公開する
 
 1. `vault-publish.txt` に公開したいノート（またはディレクトリ）を Vault からの相対パスで追記する
