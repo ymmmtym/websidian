@@ -1,5 +1,5 @@
 {
-  "name": "websidian",
+  "name": "@jackyzha0/quartz",
   "description": "Obsidian Vault のノートを Quartz で公開するサイト",
   "private": true,
   "version": "5.1.0",

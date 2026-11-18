@@ -1,3 +1,6 @@
 public
 node_modules
 .quartz-cache
+
+# Obsidian Vault から同期するノート。整形は Vault 側を正とする
+content
