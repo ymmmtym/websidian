@@ -1,5 +1,91 @@
 # websidian
 
-Obsidian Vault のノートを [Quartz](https://quartz.jzhao.xyz/) で静的サイト化し、GitHub Pages で公開するためのリポジトリです。
+Obsidian Vault のノートを [Quartz v5](https://quartz.jzhao.xyz/) で静的サイト化し、GitHub Pages で公開するためのリポジトリです。
 
-セットアップ手順は `feat/quartz-setup` ブランチで整備中です。
+公開 URL（既定）: <https://ymmmtym.github.io/websidian/>
+
+## 構成
+
+```
+content/               公開するノート（Vault と同じディレクトリ構成）
+  knowledge/           Vault の knowledge/ から同期したノート
+  index.md             トップページ（このリポジトリで管理）
+quartz/                Quartz 本体（アップストリーム由来）
+quartz.config.yaml     サイト設定（タイトル・baseUrl・テーマ・プラグイン）
+vault-publish.txt      公開対象のノート一覧（Vault からの相対パス）
+scripts/sync-from-vault.sh  Vault → content/ の同期スクリプト
+.github/workflows/deploy.yml  GitHub Pages へのデプロイ
+```
+
+`content/` の中身は Vault から生成される想定です。直接編集せず、Vault 側を編集して同期してください（`content/index.md` だけはこのリポジトリで管理）。
+
+## 前提
+
+- Node.js 22 以上 / npm 10.9.2 以上
+- Vault の場所: `~/Documents/Obsidian Vault`（`OBSIDIAN_VAULT` 環境変数で変更可）
+
+## セットアップ
+
+```bash
+npm ci
+```
+
+## ノートを公開する
+
+1. `vault-publish.txt` に公開したいノート（またはディレクトリ）を Vault からの相対パスで追記する
+
+   ```
+   knowledge/some-note.md
+   knowledge/another-directory/
+   ```
+
+2. 同期する
+
+   ```bash
+   ./scripts/sync-from-vault.sh --dry-run   # 確認
+   ./scripts/sync-from-vault.sh             # 実行
+   ```
+
+3. ローカルで確認する
+
+   ```bash
+   npx quartz build --serve
+   ```
+
+   <http://localhost:8080> でプレビューできます。
+
+4. 変更をコミットして push すると、GitHub Actions がビルドして GitHub Pages にデプロイします。
+
+## サイト設定
+
+`quartz.config.yaml` を編集します。主な項目:
+
+| 項目                      | 説明                                                       |
+| ------------------------- | ---------------------------------------------------------- |
+| `configuration.pageTitle` | サイトタイトル                                             |
+| `configuration.baseUrl`   | 公開先のホスト + パス（例: `ymmmtym.github.io/websidian`） |
+| `configuration.locale`    | UI の言語（`ja-JP`）                                       |
+| `plugins`                 | 有効にするプラグイン（検索・グラフ・バックリンクなど）     |
+
+> [!note]
+> リポジトリ名や GitHub ユーザー名を変えた場合は `configuration.baseUrl` も合わせて変更してください。
+
+## GitHub Pages の有効化
+
+1. GitHub のリポジトリで **Settings → Pages** を開く
+2. **Source** で **GitHub Actions** を選択
+3. `main` ブランチに push（または Actions から `Deploy Quartz site to GitHub Pages` を手動実行）
+
+## 公開範囲について
+
+このリポジトリは public を想定しています。`vault-publish.txt` に載せたノートだけが `content/` に入るので、Vault 全体（`agents/` や `draft/` など）は公開されません。個人情報や社外秘の情報を含むノートを追加しないよう注意してください。
+
+## Quartz の更新
+
+```bash
+git remote add upstream https://github.com/jackyzha0/quartz.git  # 初回のみ
+git fetch upstream
+git merge upstream/v5
+```
+
+詳細は Quartz の [アップグレードガイド](https://quartz.jzhao.xyz/getting-started/upgrading) を参照してください。
