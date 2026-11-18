@@ -1,5 +1,5 @@
 ---
-title: Knowledge Base
+title: Websidian
 ---
 
 Obsidian Vault で管理している技術メモを静的サイトとして公開しています。
