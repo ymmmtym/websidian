@@ -80,6 +80,16 @@ npm ci
 > [!note]
 > リポジトリ名や GitHub ユーザー名を変えた場合は `configuration.baseUrl` も合わせて変更してください。
 
+## タブ表示
+
+ノートを移動すると、開いたページが左側にタブとして積まれます（`@quartz-community/stacked-pages`）。
+
+- タブをクリックするとそのページに戻る
+- `×` で閉じる（現在のタブを閉じると隣のタブへ移動）
+- 最大 8 タブ（`quartz.config.yaml` の `stacked-pages` の `maxTabs` で変更）
+- 履歴はブラウザの `sessionStorage` に保存され、リロードしても残る（ブラウザのタブを閉じると消える）
+- 幅 800px 未満では非表示（`mobileBreakpoint`）
+
 ## GitHub Pages の有効化
 
 1. GitHub のリポジトリで **Settings → Pages** を開く

@@ -8,6 +8,7 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 - `content/` は Vault から同期される生成物。**直接編集しない**（例外は `content/index.md`）。次回の同期で上書きされる。
 - 公開対象は `vault-publish.txt` に列挙したパスだけ。Vault 全体（`agents/`, `draft/` など）は公開しない。
 - プラグインは npm パッケージ（`@quartz-community/*`, `@quartz-themes/*`）。設定に追加したら `npx quartz plugin install` を実行する。
+- タブ UI は `@quartz-community/stacked-pages` の有効化で実現している（自前実装しない）。履歴は `sessionStorage` 保存、`mobileBreakpoint`（既定 800px）未満では非表示。
 - `public/`（ビルド成果物）と `node_modules/` はコミットしない。
 
 ## コマンド
