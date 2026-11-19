@@ -15,9 +15,9 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 ## コマンド
 
 - プレビュー: `npx quartz build --serve` → <http://localhost:8080>
-- CI と同じ手順: `npm ci` → `npx quartz plugin install` → `npx quartz build`
 - テスト: `npm test`（Quartz 本体のユニットテストのみ。`content/` は対象外）
 - 型・整形: `npm run check` / 自動修正は `npm run format`
+- PR を出すと `.github/workflows/test.yml` が `npm run check` → `npm test` → `npx quartz build` を実行する。ローカルで確認する場合もこの3つを通す。
 - ノート同期: `./scripts/sync-from-vault.sh [--dry-run]`
   - Vault の既定パスは `~/Documents/Obsidian Vault`。`OBSIDIAN_VAULT` で上書きする
   - 同期対象は `vault-publish.txt`（Vault からの相対パス）
@@ -37,7 +37,7 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 ## デプロイ
 
 - `main` に push すると `.github/workflows/deploy.yml` が GitHub Actions 経由で GitHub Pages にデプロイする。Pages の Source は「GitHub Actions」。
-- デプロイは `main` push のみがトリガー。作業ブランチでの確認はローカルビルドで行う。
+- デプロイは `main` push のみがトリガー。作業ブランチでの確認は `.github/workflows/test.yml`（PR）またはローカルビルドで行う。
 
 ## コンテンツ規約
 
