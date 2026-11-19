@@ -82,13 +82,15 @@ npm ci
 
 ## タブ表示
 
-ノートを移動すると、開いたページが左側にタブとして積まれます（`@quartz-community/stacked-pages`）。
+ノートを移動すると、画面上部に横一列のタブが追加されます（`@quartz-community/stacked-pages`）。
 
 - タブをクリックするとそのページに戻る
 - `×` で閉じる（現在のタブを閉じると隣のタブへ移動）
 - 最大 8 タブ（`quartz.config.yaml` の `stacked-pages` の `maxTabs` で変更）
 - 履歴はブラウザの `sessionStorage` に保存され、リロードしても残る（ブラウザのタブを閉じると消える）
 - 幅 800px 未満では非表示（`mobileBreakpoint`）
+
+プラグイン標準の見た目は左右の縦タブ（バインダー風）です。`quartz/styles/custom.scss` で上部タブバーに上書きしているので、プラグインを外す場合はこの CSS も削除してください。
 
 ## GitHub Pages の有効化
 

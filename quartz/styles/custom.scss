@@ -1,3 +1,199 @@
 @use "./variables.scss" as *;
 
-// put your custom CSS here!
+// ---------------------------------------------------------------------------
+// タブバー（@quartz-community/stacked-pages）
+// プラグイン標準の「バインダー風・左右の縦タブ」を Obsidian 風の上部タブバーに
+// 変更する。このファイルはカスケードレイヤーの外側なのでプラグインの CSS を
+// 上書きできる。
+//
+// 色は var(--light) / var(--lightgray) の混色で作っているので、ライト／ダーク
+// どちらのテーマでも「バーより少し明るいタブ」になる。
+// ---------------------------------------------------------------------------
+
+$tabbar-height: 38px;
+$tabbar-height-mobile: 36px;
+
+#stacked-pages-container.binder-active {
+  // ライトテーマ: バーはページより少し暗く、アクティブタブはページと同じ明るさ
+  --tabbar-bg: color-mix(in srgb, var(--light) 45%, var(--lightgray));
+  --tabbar-bg-hover: color-mix(in srgb, var(--light) 65%, var(--lightgray));
+  --tabbar-bg-active: var(--light);
+  --tabbar-divider: color-mix(in srgb, var(--lightgray) 85%, var(--darkgray));
+
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: $tabbar-height;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  background: var(--tabbar-bg);
+  border-bottom: 1px solid var(--tabbar-divider);
+  overflow: hidden;
+  z-index: 90; // モバイルのエクスプローラー（z-index: 100）より下に置く
+}
+
+#stacked-pages-container .binder-strip {
+  display: flex;
+  flex-direction: row;
+  flex: 0 1 auto;
+  align-self: stretch;
+  align-items: stretch;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  height: 100%;
+  margin-left: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+#stacked-pages-container .binder-tab {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 220px;
+  padding: 0 8px 0 12px;
+  gap: 6px;
+  justify-content: space-between;
+  writing-mode: horizontal-tb;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--tabbar-divider);
+  border-radius: 0;
+  color: var(--darkgray);
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+
+  &:hover {
+    background: var(--tabbar-bg-hover);
+    color: var(--dark);
+    transform: none;
+  }
+}
+
+#stacked-pages-container .binder-tab.binder-tab-active {
+  background: var(--tabbar-bg-active);
+  color: var(--dark);
+  box-shadow: inset 0 2px 0 var(--secondary);
+  border-right-color: transparent;
+  cursor: default;
+
+  & .binder-label {
+    font-weight: 600;
+  }
+}
+
+#stacked-pages-container .binder-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  transform: none;
+  text-align: left;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+#stacked-pages-container .binder-close {
+  flex: 0 0 auto;
+  transform: none;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 1px 3px;
+  border-radius: 3px;
+  opacity: 0;
+}
+
+#stacked-pages-container .binder-tab:hover .binder-close,
+#stacked-pages-container .binder-tab-active .binder-close {
+  opacity: 0.7;
+}
+
+// プラグインは左右に余白を足すので、代わりに上部にタブバー分の余白を確保する
+body.has-binder-left #quartz-root.page,
+body.has-binder-right #quartz-root.page {
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: $tabbar-height;
+}
+
+// 固定タブバーの下に見出しが隠れないようにする
+html {
+  scroll-padding-top: calc(#{$tabbar-height} + 8px);
+}
+
+// スマートフォン
+// タブは横スクロールさせず、画面幅を等分して全部見えるようにする。
+// （スクロール方式だと、開いたばかりのアクティブタブが画面外に隠れてしまう）
+@media all and (max-width: 800px) {
+  #stacked-pages-container.binder-active {
+    height: $tabbar-height-mobile;
+  }
+
+  #stacked-pages-container .binder-strip {
+    flex: 1 1 auto;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  #stacked-pages-container .binder-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    padding: 0 4px 0 8px;
+    gap: 2px;
+  }
+
+  #stacked-pages-container .binder-label {
+    font-size: 0.78rem;
+  }
+
+  // 狭い画面では × はアクティブなタブだけに出す
+  #stacked-pages-container .binder-close {
+    display: none;
+    font-size: 0.8rem;
+    padding: 1px 2px;
+  }
+
+  #stacked-pages-container .binder-tab-active .binder-close {
+    display: block;
+  }
+
+  body.has-binder-left #quartz-root.page,
+  body.has-binder-right #quartz-root.page {
+    padding-top: $tabbar-height-mobile;
+  }
+
+  html {
+    scroll-padding-top: calc(#{$tabbar-height-mobile} + 8px);
+  }
+
+  // ノートのプロパティ（tags など）が狭い画面で縦折れするのを防ぐ
+  .note-properties-table {
+    table-layout: auto;
+  }
+
+  .note-properties-key {
+    width: auto;
+    white-space: nowrap;
+  }
+
+  .note-properties-value {
+    word-break: normal;
+  }
+
+  .note-properties-tags {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .note-properties-separator {
+    display: none;
+  }
+}

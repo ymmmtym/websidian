@@ -127,8 +127,9 @@ plugins:
     enabled: true
     options:
       maxTabs: 8
-      showSpines: true
-      mobileBreakpoint: 800
+      showSpines: false
+      # 0 にするとスマートフォンでもタブバーを表示する（レイアウトは custom.scss 側で調整）
+      mobileBreakpoint: 0
     layout:
       position: afterBody
       priority: 50
