@@ -6,7 +6,7 @@ configuration:
   enablePopovers: true
   analytics: null
   locale: ja-JP
-  baseUrl: ymmmtym.github.io/websidian
+  baseUrl: websidian.yumenomatayume.net
   ignorePatterns:
     - private
     - templates
