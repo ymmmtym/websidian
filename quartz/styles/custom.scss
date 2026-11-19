@@ -127,17 +127,32 @@ html {
   scroll-padding-top: calc(#{$tabbar-height} + 8px);
 }
 
-// スマートフォン
-// タブは横スクロールさせず、画面幅を等分して全部見えるようにする。
-// （スクロール方式だと、開いたばかりのアクティブタブが画面外に隠れてしまう）
-// タグ（#context-engineering など）の途中で折り返さない
-// ノートのプロパティ欄・フォルダ/タグページの一覧など、タグ表示箇所すべてに適用
+// タグ（#context-engineering など）はチップの途中で折り返さない。
+// 折り返す場合はチップとチップの間で行う。
 .tag-link {
   white-space: nowrap;
   word-break: normal;
   overflow-wrap: normal;
 }
 
+// ノートのプロパティ欄の tags 行。
+// プラグイン既定は inline-flex かつ flex-wrap なしなので、上の nowrap と
+// 組み合わさるとタグがセル幅を超えて表の外へはみ出す（デスクトップ幅で顕著）。
+.note-properties-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+// チップ表示なので区切りカンマは出さない（折り返し時にカンマだけが行末に残るため）。
+// aliases などタグ以外の配列はチップではないので、カンマを残す。
+.note-properties-tags .note-properties-separator {
+  display: none;
+}
+
+// スマートフォン
+// タブは横スクロールさせず、画面幅を等分して全部見えるようにする。
+// （スクロール方式だと、開いたばかりのアクティブタブが画面外に隠れてしまう）
 @media all and (max-width: 800px) {
   #stacked-pages-container.binder-active {
     height: $tabbar-height-mobile;
@@ -193,15 +208,5 @@ html {
 
   .note-properties-value {
     word-break: normal;
-  }
-
-  .note-properties-tags {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-  }
-
-  .note-properties-separator {
-    display: none;
   }
 }
