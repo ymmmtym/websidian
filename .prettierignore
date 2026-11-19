@@ -4,3 +4,7 @@ node_modules
 
 # Obsidian Vault から同期するノート。整形は Vault 側を正とする
 content
+
+# Renovate が自前の整形で生成・上書きするため、こちらの整形は適用しない
+# （ボットブランチへの --write は次の実行で巻き戻る）
+renovate.json
