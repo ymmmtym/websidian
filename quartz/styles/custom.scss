@@ -131,7 +131,8 @@ html {
 // タブは横スクロールさせず、画面幅を等分して全部見えるようにする。
 // （スクロール方式だと、開いたばかりのアクティブタブが画面外に隠れてしまう）
 // タグ（#context-engineering など）の途中で折り返さない
-.note-properties-tags .tag-link {
+// ノートのプロパティ欄・フォルダ/タグページの一覧など、タグ表示箇所すべてに適用
+.tag-link {
   white-space: nowrap;
   word-break: normal;
   overflow-wrap: normal;
