@@ -2,7 +2,7 @@
 
 Obsidian Vault のノートを [Quartz v5](https://quartz.jzhao.xyz/) で静的サイト化し、GitHub Pages で公開するためのリポジトリです。
 
-公開 URL（既定）: <https://ymmmtym.github.io/websidian/>
+公開 URL: <https://websidian.yumenomatayume.net/>
 
 ## 構成
 
@@ -70,15 +70,15 @@ npm ci
 
 `quartz.config.yaml` を編集します。主な項目:
 
-| 項目                      | 説明                                                       |
-| ------------------------- | ---------------------------------------------------------- |
-| `configuration.pageTitle` | サイトタイトル                                             |
-| `configuration.baseUrl`   | 公開先のホスト + パス（例: `ymmmtym.github.io/websidian`） |
-| `configuration.locale`    | UI の言語（`ja-JP`）                                       |
-| `plugins`                 | 有効にするプラグイン（検索・グラフ・バックリンクなど）     |
+| 項目                      | 説明                                                        |
+| ------------------------- | ----------------------------------------------------------- |
+| `configuration.pageTitle` | サイトタイトル                                              |
+| `configuration.baseUrl`   | 公開先のホスト + パス（例: `websidian.yumenomatayume.net`） |
+| `configuration.locale`    | UI の言語（`ja-JP`）                                        |
+| `plugins`                 | 有効にするプラグイン（検索・グラフ・バックリンクなど）      |
 
 > [!note]
-> リポジトリ名や GitHub ユーザー名を変えた場合は `configuration.baseUrl` も合わせて変更してください。
+> 公開先のドメインやパスを変えた場合は `configuration.baseUrl` も合わせて変更してください。カスタムドメインのルートで配信する場合はパスを含めません。
 
 ## タブ表示
 

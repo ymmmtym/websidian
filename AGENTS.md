@@ -31,7 +31,7 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 - `vault-publish.txt` から行を消しても `content/` のファイルは残る。公開をやめるときは `content/` 側も削除し、`content/index.md` の一覧も更新する。
 - macOS の `rsync` は openrsync で `--relative` / `/./` が効かない。同期スクリプトがディレクトリとファイルで分岐しているのはそのため。
 - ビルド時の `point to pages that are not on the site` 警告は、未公開ノートへの `[[wikilink]]` によるもの。失敗ではない。
-- `quartz.config.yaml` の `configuration.baseUrl` は公開 URL と一致させる（既定 `ymmmtym.github.io/websidian`）。リポジトリ名を変えたら更新する。
+- `quartz.config.yaml` の `configuration.baseUrl` は公開 URL と一致させる（現在 `websidian.yumenomatayume.net`）。カスタムドメインのルート配信なのでパスは含めない。ドメインを変えたら更新する。
 - ノートを追加したら `content/index.md` のリンク一覧も手動で更新する（自動生成ではない）。
 
 ## デプロイ
