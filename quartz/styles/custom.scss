@@ -130,6 +130,13 @@ html {
 // スマートフォン
 // タブは横スクロールさせず、画面幅を等分して全部見えるようにする。
 // （スクロール方式だと、開いたばかりのアクティブタブが画面外に隠れてしまう）
+// タグ（#context-engineering など）の途中で折り返さない
+.note-properties-tags .tag-link {
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
 @media all and (max-width: 800px) {
   #stacked-pages-container.binder-active {
     height: $tabbar-height-mobile;
