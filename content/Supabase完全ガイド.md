@@ -125,7 +125,7 @@ Supabase の採用判断から、React + TypeScript + Vite での接続方法、
 
 2. **Auth のリダイレクト URL 許可リスト**
    - メール確認やマジックリンクの戻り先を、ダッシュボードの Site URL と Redirect URLs に設定します。`emailRedirectTo` を指定しない `signUp` では確認後に Site URL へ戻るため、Site URL をアプリの URL に設定してください。
-   - ローカルでは Vite アプリの URL（例: `http://localhost:5173`）を Redirect URLs に登録します。`localhost:54321` は Supabase API のポートなので、アプリの URL ではありません。ローカルで確認フローを試す場合は、下の `signUp` の例のように `emailRedirectTo` にこのローカル URL を指定します。
+   - ローカルでは Vite アプリの URL（例: `http://localhost:5173/`）を Redirect URLs に登録します。`localhost:54321` は Supabase API のポートなので、アプリの URL ではありません。ローカルで確認フローを試す場合は、下の `signUp` の例のように `emailRedirectTo` にこのローカル URL を指定します。
 
 3. **秘密鍵が必要な処理は置けない**
    - Stripe の webhook 検証、外部 API キー利用、メール送信などはブラウザに置けません。ここだけ **Edge Functions** に逃がします。
@@ -177,8 +177,8 @@ const { data, error } = await supabase.auth.signUp({
   email,
   password,
   options: {
-    // 許可リストに登録したローカルのアプリ URL を指定します
-    emailRedirectTo: 'http://localhost:5173',
+    // 許可リストに登録したローカルのアプリ URL を指定します（末尾の / も一致させます）
+    emailRedirectTo: 'http://localhost:5173/',
   },
 })
 if (error) throw error
@@ -342,7 +342,7 @@ create trigger on_auth_user_created
 
 4. **ゲートウェイのホストポートを絞ります**
 
-   現在の Compose の既定ゲートウェイは `api-gw`（Envoy）です。`docker-compose.yml` の `api-gw` の `ports` をコメントアウトするか `127.0.0.1` にバインドし、Studio（3000）も外部公開しません。Kong を使うオーバーライド（`sh run.sh config add kong`）を適用している場合は `kong` が対象です。
+   現在の Compose の既定ゲートウェイは `api-gw`（Envoy）です。プロキシを同じ Docker ネットワークで動かす場合は `docker-compose.yml` の `api-gw` の `ports` をコメントアウトします。ホスト上の Nginx などから接続する場合は、削除せず `127.0.0.1:8000:8000` のようにループバックへバインドします（Kong オーバーライドを使う場合も `kong` が対象です）。Studio（3000）はホストポートを公開しません。
 
 5. **コンテナを起動します**
 
@@ -352,7 +352,7 @@ create trigger on_auth_user_created
 
 6. **リバースプロキシで HTTPS 化します**
 
-   Nginx、Caddy、Cloudflare Tunnel などを前面に置き、API ゲートウェイ（既定は `api-gw`: 8000）や Studio（3000）へルーティングします。本番では公開するのはプロキシのポート（80/443）のみとし、ファイアウォールでそれ以外の受信ポートを遮断します。
+   Nginx、Caddy、Cloudflare Tunnel などを前面に置き、**API ゲートウェイ（既定は `api-gw`: 8000）だけへ**ルーティングします。Studio（3000）へ直接転送しないでください（ダッシュボードの Basic 認証や `/api/mcp` の拒否はゲートウェイで適用されます）。WebSocket の Upgrade ヘッダーと `X-Forwarded-*` ヘッダーも設定します。本番では公開するのはプロキシのポート（80/443）のみとし、ファイアウォールでそれ以外の受信ポートを遮断します。
 
 ### メリット
 
