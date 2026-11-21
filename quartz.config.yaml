@@ -12,6 +12,7 @@ configuration:
     - templates
     - .obsidian
     - draft
+    - draft/**
   theme:
     fontOrigin: googleFonts
     cdnCaching: true
