@@ -104,7 +104,7 @@ Synology の Web Station、QNAP の Web サーバー、ASUSTOR などがWebサ�
 ## 端末ごとのインストール手順
 
 > [!warning] 信頼ストアへ登録する前に必ず照合する
-> どの端末でも、NAS などからコピーした `rootCA.pem` / `rootCA.crt` の SHA-256 指紋を、事前に控えた値と照合してから登録する。不一致なら登録を中止し、配布元と転送経路を確認する。照合方法は後述の「信頼ストアへ登録する前の照合」を参照。
+> どの端末でも、NAS などからコピーした `rootCA.pem` / `rootCA.crt` の SHA-256 指紋を、事前に控えた値と照合してから登録する。不一致なら登録を中止し、配布元と転送経路を確認する。macOS / Windows は下記の各手順で端末上でも照合できる。iOS / iPadOS / Android は端末の標準機能で証明書の SHA-256 指紋を表示する手順を確認できなかったため、**Mac または Windows で照合済みのファイルだけを端末へ転送する**。NAS から直接取得したファイルをそのまま信頼しない。照合方法は後述の「信頼ストアへ登録する前の照合」を参照。
 
 ### macOS（Mac 本体）
 
@@ -133,6 +133,14 @@ security find-certificate -a -c "mkcert" -Z /Library/Keychains/System.keychain
 
 ### Windows
 
+信頼ストアへ登録する前に、コピーした `rootCA.crt` の証明書指紋（SHA-256）を確認する。`certutil` は Windows に標準搭載されている。
+
+```cmd
+certutil -dump C:\Temp\rootCA.crt
+```
+
+出力の `Cert Hash(sha256)` が、事前に控えた値と一致することを確認する。**`Get-FileHash` や `certutil -hashfile` が出すのは PEM ファイル全体のハッシュで、証明書の指紋とは別物**。その値で照合しない。
+
 1. NASの `rootCA.crt` をデスクトップなどにコピー。
 2. ダブルクリック →「証明書のインストール」。
 3. 保存場所で **「ローカルコンピューター」** を選択（要管理者権限。自分のユーザーのみなら「現在のユーザー」でも可）。
@@ -154,8 +162,8 @@ Get-ChildItem Cert:\LocalMachine\Root | Where-Object { $_.Subject -like "*mkcert
 
 ### iOS / iPadOS
 
-1. 「ファイル」アプリ → 右上「…」→「サーバーへ接続」でNAS（SMB）に接続し、`rootCA.crt` をダウンロード。
-    *（NASのWebサーバーがあるなら Safari でURLを開くだけでも可）*
+1. Mac または Windows で指紋を照合済みの `rootCA.crt` を、「ファイル」アプリ → 右上「…」→「サーバーへ接続」でNAS（SMB）からダウンロード。端末上で照合できないため、未照合のファイルをそのままインストールしない。
+    *（NASのWebサーバーがあるなら Safari でURLを開くだけでも可。この場合も転送前に PC で照合済みであること）*
 2. 「プロファイルがダウンロードされました」と表示されたら、**設定 → 一般 → VPNとデバイス管理** でプロファイルを選び「インストール」。
 3. **設定 → 一般 → 情報 → 証明書信頼設定** を開き、該当のCAのスイッチを **オン**（完全な信頼）。
 4. Safari を再起動して確認。
@@ -164,7 +172,7 @@ Get-ChildItem Cert:\LocalMachine\Root | Where-Object { $_.Subject -like "*mkcert
 
 ### Android
 
-1. ファイル管理アプリでNASから端末の「ダウンロード」フォルダーへコピー（`.crt` のままでOK）。
+1. Mac または Windows で指紋を照合済みの `rootCA.crt` を、ファイル管理アプリでNASから端末の「ダウンロード」フォルダーへコピー（`.crt` のままでOK）。端末上で照合できないため、未照合のファイルをそのままインストールしない。
 2. **設定 → セキュリティ → 暗号化と認証情報 → インストール → CA証明書** を選択。
     *（メーカーにより「設定 → セキュリティ → その他のセキュリティ設定 → 証明書のインストール」など）*
 3. 「このままインストールしますか？」の警告を確認して続行。
@@ -237,6 +245,16 @@ openssl x509 -in rootCA.crt -noout -fingerprint -sha256
 ```
 
 表示された値を、**事前に控えた値**（NAS とは別の場所に保管したもの）と文字単位で一致するか確認してから、信頼ストアへ登録する。不一致なら登録せず、配布元と転送経路を確認する。証明書を信頼した後に気づいても、攻撃者の CA が既に信頼された状態になる。
+
+OS ごとの確認手段は次のとおり。
+
+| OS | 指紋の確認手段 |
+|---|---|
+| macOS / Linux | 上の `openssl x509 -noout -fingerprint -sha256` |
+| Windows | `certutil -dump <ファイル>` の `Cert Hash(sha256)` |
+| iOS / iPadOS / Android | 端末の標準機能で確認する手順は未確認。PC で照合済みのファイルを転送する |
+
+`Get-FileHash` や `certutil -hashfile` はファイル全体のハッシュを計算するため、証明書の指紋とは値が一致しない。照合には証明書を解析した値を使う。
 
 ## 運用メモ
 
