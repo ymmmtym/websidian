@@ -105,14 +105,7 @@ Synology の Web Station、QNAP の Web サーバー、ASUSTOR などがWebサ�
 
 ### macOS（Mac 本体）
 
-通常は `mkcert -install` 実行済みのため作業不要である。別のMacで信頼させたい場合：
-
-```bash
-# NASなどから rootCA.pem を取得したフォルダーで
-mkcert -install         # カレントではなく $CAROOT を見るため、下記の方法が確実
-```
-
-確実なのは、`rootCA.pem` を置いたフォルダーを `CAROOT` にして実行する方法である。
+通常は `mkcert -install` 実行済みのため作業不要である。別のMacで信頼させたい場合は、`rootCA.pem` を置いたフォルダーを `CAROOT` に指定して実行する。CAROOT を指定しないと、既存の CA がない環境では新しい CA と秘密鍵が作成されてしまう。
 
 ```bash
 mkdir -p ~/ca-root

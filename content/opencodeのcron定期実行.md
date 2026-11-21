@@ -8,11 +8,11 @@ created: 2026-09-05
 ---
 ## 概要
 
-opencode に cron（定期実行）機能があるかを調査し、組み込み機能がないことを確認した上で、プラグイン・GitHub Actions・OS cron を組み合わせた4つの代替手段を整理した記録。
+2026-09-05 時点の OpenCode で cron（定期実行）機能があるかを調査し、組み込み機能がないことを確認した上で、プラグイン・GitHub Actions・OS cron を組み合わせた4つの代替手段を整理した記録。
 
 ## opencode 本体の cron 機能
 
-opencode の CLI には**組み込みの cron 機能は存在しない**。提供されているコマンドは `run` / `serve` / `session` / `stats` などで、スケジューリング機能は含まれていない。
+2026-09-05 時点の OpenCode CLI には**組み込みの cron 機能は存在しない**。提供されているコマンドは `run` / `serve` / `session` / `stats` などで、スケジューリング機能は含まれていない。将来のバージョンで変わる可能性があるため、導入前に `opencode --help` と公式ドキュメントで確認する。
 
 非対話モードの `opencode run` は外部のスケジューラから呼び出す前提で設計されており、定期実行はプラグインや OS の仕組みを組み合わせて実現する。
 
@@ -114,6 +114,11 @@ on:
   schedule:
     - cron: "0 9 * * 1" # 毎週月曜 9時 UTC
 
+# 既定では同時実行が許可される。短い間隔で動かす場合は明示的に直列化する
+concurrency:
+  group: scheduled-opencode-task
+  cancel-in-progress: false
+
 jobs:
   opencode:
     runs-on: ubuntu-latest
@@ -140,6 +145,7 @@ jobs:
 
 > [!note] schedule イベントの注意
 > スケジュール実行には `prompt` 必須。ユーザーコンテキストがないため、PR 作成等には `contents: write` と `pull-requests: write` の権限付与が必要。出力はログと PR に反映される（コメント先のissueがないため）。
+> 同時実行の重複防止は既定では行われない。上の例の `concurrency` で直列化する（`cancel-in-progress: false` なら前回の完了を待つ）。
 
 ## 代替手段 4: OS cron + opencode run
 
@@ -160,7 +166,7 @@ jobs:
 |------|--------------|--------|----------------|----------------|----------|
 | opencode-scheduler | launchd/systemd | ○ | なし | ○ | ○ |
 | opencode-cron | セッション内 (SQLite) | 要 watch | ○ | ○ | - |
-| GitHub Actions | GitHub 側 | ○ | なし | 不要 | ○ |
+| GitHub Actions | GitHub 側 | ○ | なし | 不要 | `concurrency` 設定時のみ |
 | OS cron + run | cron | ○ | なし | ○ | 手動 |
 
 > [!tip] 推奨

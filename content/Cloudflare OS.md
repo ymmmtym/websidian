@@ -46,19 +46,20 @@ Cloudflare社内で先行運用されていたものをApache 2.0でOSS化し、
 
 - 各外部サービスへの接続を仲介する専用Worker(MCPサーバーの強化版と説明されている)
 - 副作用のある操作は人間の承認が必要だが、**非同期承認**が可能。エージェントは承認待ちで止まらず、結果をシミュレートしながら処理を継続でき、人間は後でまとめて承認/却下できる
+- 例外: MCP Gatekeeper では書き込みをシミュレートできないため、承認待ちの間エージェントが停止する。後でまとめて承認できる前提で作業を任せると途中で止まる
 
 ### 導入方法
 
-1. **ローカル実行**: `pnpm run-local` → `localhost:8787`。`wrangler`+`workerd`でローカル完結。Cloudflareアカウント不要、本番用途ではない
+1. **ローカル実行**: `cloudflare-os` リポジトリを clone してディレクトリに移動し、pnpm を用意した上で `pnpm run-local` → `localhost:8787`。`wrangler`+`workerd`でローカル完結。Cloudflareアカウント不要、本番用途ではない
 2. **自分のCloudflareアカウントへデプロイ**: `os.cloudflare.app/deploy` のオンラインフロー、またはより高度な設定向けの `cloudflare-os-starter` リポジトリ。Workers, KV, R2, Durable Objects, Dynamic Worker Loaders, Workers AI, AI Gatewayが必要
-3. **自前サーバーで`workerd`のみで完結**: 現時点では **Coming Soon(未実装)**。Cloudflareクラウドへの依存を完全に切り離すことはまだできない
+3. **自前サーバーで`workerd`のみで完結**: `workerd` 上での実行自体は上流READMEに記載があるが、デプロイ用のドキュメントとツールは **Coming Soon(未整備)**。Cloudflareクラウドへの依存を完全に切り離す手順はまだない
 
 ### ホームラボでの現実性
 
 - OpenWrtルーター上では動作不可(組み込みLinuxでNode.js/pnpm実行は非現実的)。ミニPC等のサーバー機での実行が前提
 - ローカル検証(`pnpm run-local`)は今すぐ可能、Cloudflareアカウント不要
 - 本番相当の運用にはCloudflareクラウド(Workers AI/AI Gateway等)への依存とコスト許容が必要。Durable Objects/Dynamic Workersは使用量課金の可能性がある
-- 完全self-hosted版は未実装のため、vendor lock-in回避を重視する場合は現時点で制約がある
+- self-hosted向けのデプロイ用ドキュメント・ツールは未整備のため、vendor lock-in回避を重視する場合は現時点で制約がある
 - Prometheus/Grafana向けのネイティブexporterは確認できず、連携する場合はCloudflareのWorkers Observability/Analytics APIから自前で取得する必要がありそう(未検証)
 
 ## 図解
@@ -78,7 +79,7 @@ flowchart TD
 
 - Cloudflare OSは「エージェントに安全にコードを書かせて実行させる基盤」という独自ポジション。Glean(企業ナレッジ検索)やMicrosoft Copilot(M365統合)とは思想が異なり、self-hostable志向の点ではDustに近い
 - 技術的にはWorkers(実行基盤)、Dynamic Workers(隔離実行)、Durable Objects(状態保持)、AI Gateway(LLM管理)、Gatekeepers(外部アクセス制御)の組み合わせで成立している
-- ホームラボでの「お試し」は今すぐ可能だが、「vendor lock-inを避けた本番自宅インフラ」としては、完全self-hosted版が未実装である点がネックになる
+- ホームラボでの「お試し」は今すぐ可能だが、「vendor lock-inを避けた本番自宅インフラ」としては、self-hosted向けのデプロイ用ドキュメント・ツールが未整備である点がネックになる
 
 ## 参考リンク
 

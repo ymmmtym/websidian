@@ -116,8 +116,8 @@ mega-sync
 # 同期の詳細状態
 mega-sync --help
 
-# 進行中の転送状態
-mega-transfers
+# 進行中の転送状態（同期転送も表示）
+mega-transfers --show-syncs
 
 # 同期設定ファイルの確認
 cat /var/services/homes/<ユーザー>/.megaCmd/syncs

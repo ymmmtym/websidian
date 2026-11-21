@@ -21,14 +21,14 @@ AWS Lambda Web Adapterは「コンテナ/バイナリをHTTPサーバーとし�
 
 | 選択肢 | 特徴 |
 |---|---|
-| **Knative** | K8sのCRDとしてFaaSを実現。コンテナイメージを渡すだけでスケールtoゼロ・オートスケール。GCP Cloud Runの実装基盤でもあり、同じyamlがオンプレでもクラウドでも動く |
-| **OpenFaaS** | Knativeより軽量。Docker/K8sどちらでも動作し`faas-cli`でコンテナ化〜デプロイまで一貫。自宅ラボ規模ではKnativeより現実的な選択肢 |
+| **Knative** | K8sのCRDとしてFaaSを実現。コンテナイメージを渡すだけでスケールtoゼロ・オートスケール。GCP Cloud Runの実装基盤でもあり、YAMLの一部は共有できるが、移行時にはnamespaceの変更や未対応フィールドの削除が必要 |
+| **OpenFaaS** | Knativeより軽量。K8s上では`faas-cli`でコンテナ化〜デプロイまで一貫。Docker Swarm向けの`faas-swarm`は非推奨・保守停止で、単一ノード向けの`faasd`はcontainerdを使いDockerとの同居も避ける必要がある。自宅ラボ規模ではKnativeより現実的な選択肢 |
 
 Lambda Web Adapterとの共通点は「コンテナを渡せばFaaS化される」という互換思想。実行基盤をK8sという業界標準に寄せることでロックインを回避する。
 
 ### 2. WASM型FaaS
 
-WASI(WebAssembly System Interface)という標準化されたシステムコールインターフェースにより、一度コンパイルしたWASMバイナリがどのランタイム上でも同じように動く、コンテナよりさらに強いポータビリティを持つ。
+WASI(WebAssembly System Interface)という標準化されたシステムコールインターフェースにより、一度コンパイルしたWASMバイナリを別のランタイムへ移植できる。ただし実行先が必要なインターフェースとバージョンを提供する必要があり、例えば`wasi:http`をインポートするコンポーネントはホスト側の対応が必須である。
 
 | 選択肢 | 特徴 |
 |---|---|

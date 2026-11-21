@@ -57,23 +57,23 @@ created: 2026-11-04
 - Grok 5 は2026年8月時点の二次情報で未リリース。Grok 4.5 は公開時点で EU 未提供だった。
 
 **DeepSeek / Mistral 等（オープンウェイト系）**
-- DeepSeek V4（2026-04-24、Preview）: V4-Pro（総1.6T / 活性49B）と V4-Flash（総284B / 活性13B）。MITライセンスで重みを公開。1Mコンテキストがデフォルト。
+- DeepSeek V4 系: V4-Pro（2026-04-24、総1.6T / 活性49B）は提供継続。V4-Flash は 2026-09-10 に退役し、後継の V4.1 Flash（モデルID `deepseek-flash`）に置き換わった。V4.1 Flash は 2026-10-17 に `V4.1-Flash-1017` へ更新されている。MITライセンスで重みを公開し、1Mコンテキストがデフォルト。
 - 公式APIは OpenAI の ChatCompletions と Anthropic のプロトコルの両方に対応し、Claude Code などのツールとの連携も明示されている。
-- Mistral は Large 3 / Medium 3.1 / Small 4（2026-04時点の情報）。いずれも OpenAI互換のエンドポイントで利用できる。
-- 重みが公開されているため、ホストAPIを使うか自前ホストするかでデータの経路を選べる（上位モデルは大規模GPUが必要）。
+- Mistral は Large 4 / Small 4 / Ministral 3 が現行（2026-10-31 時点）。Medium 3.1 は 2026-05-22 に、Large 3 と Medium 3.5 は 2026-10-31 に非推奨となり、新規統合には Large 4 が推奨される。Serverless 専用のモデルもあるため、OpenAI互換のエンドポイントで使えることと重みの公開は別問題。
+- 重みが公開されているモデルは、ホストAPIを使うか自前ホストするかでデータの経路を選べる。自前ホスト可否はモデルごとに公開重みの有無を確認する（上位モデルは大規模GPUが必要）。
 
 ### 比較表
 
 | 観点 | OpenAI | Anthropic | Google | xAI | DeepSeek / Mistral |
 |---|---|---|---|---|---|
-| 主力モデル | GPT-5.5 / 5.5 Pro | Fable 5.1 / Opus 5.5 / Sonnet 5.5 / Haiku 5.5 | Gemini 3 系（3.5〜3.7 Flash 系が追随） | Grok 4.5 | DeepSeek V4 Pro/Flash、Mistral Large 3 ほか |
+| 主力モデル | GPT-5.5 / 5.5 Pro | Fable 5.1 / Opus 5.5 / Sonnet 5.5 / Haiku 5.5 | Gemini 3 系（3.5〜3.7 Flash 系が追随） | Grok 4.5 | DeepSeek V4 Pro / V4.1 Flash、Mistral Large 4 ほか |
 | 位置づけ・得意分野 | 汎用の最上位。画像・音声など製品面の幅が広い | 高難度推論・長時間エージェント・コーディング | マルチモーダルと深い推論（Deep Think） | 低価格帯のコーディング・エージェント用途 | オープンウェイト、長文脈、低コスト |
 | コンテキスト | 約1.05M | 1M（上位モデル） | 要確認 | 500K | 1M（DeepSeek V4） |
 | 主なAPI形状 | Responses（Chat Completions 継続） | Messages | Gemini API（generateContent） | Responses 形式 + OpenAI互換 | OpenAI互換（DeepSeek は Anthropic プロトコルも） |
 | エージェント基盤 | Agents SDK | Agent SDK / Managed Agents / Claude Code | ADK / Antigravity / Gemini CLI | OpenAI互換クライアントで接続 | 既存ツール（Claude Code 等）から接続 |
 | ツール連携 | Responses 内蔵ツール、リモートMCP | tool use、MCP | ADK 経由 | OpenAI互換のtool call | 互換API経由で各フレームワークから利用 |
 | 提供経路 | 直接API | Claude API / Bedrock / Vertex AI / Foundry | AI Studio（APIキー）/ Vertex AI（IAM） | 直接API（console.x.ai） | 公式API + Hugging Face の重み |
-| 留意点 | Assistants API は 2026-08-26 終了予定だった（Responses へ移行前提） | 世代交代と退役日、供給停止の前例 | プレビューが多く最新は要確認 | Grok 5 未リリース、地域提供の差 | V4 は Preview、データ経路の確認が必要 |
+| 留意点 | Assistants API は 2026-08-26 終了予定だった（Responses へ移行前提） | 世代交代と退役日、供給停止の前例 | プレビューが多く最新は要確認 | Grok 5 未リリース、地域提供の差 | モデル更新と退役が早い、自前ホスト可否とデータ経路の確認が必要 |
 
 ### 横断的に見えること
 
@@ -93,7 +93,7 @@ created: 2026-11-04
 - 運用: モデルIDの設定化、タイムアウト・リトライ・レート制限対応、書き込み系操作は人間承認を挟む。供給停止の前例があるため、単一ベンダー依存を避ける。
 
 **個人の開発・学習・自動化**
-- コスト重視なら Flash 系 / mini 系 / Grok 4.5 / DeepSeek V4 Flash が候補。
+- コスト重視なら Flash 系 / mini 系 / Grok 4.5 / DeepSeek V4.1 Flash が候補。
 - OpenAI互換クライアントで `base_url` を切り替え、同じコードで複数社を試す。
 - 仕組みの学習には、重みが公開されている OSS 系（DeepSeek、Mistral など）が向く。
 - CLIエージェント（Claude Code、Codex、Gemini CLI）を使い比べると、基盤ごとの設計思想の差が分かりやすい。

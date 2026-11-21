@@ -125,7 +125,7 @@ LLM出力
 
 ## 参考リンク
 
-- [Anthropic: Claude's approach to honesty](https://www.anthropic.com/research)
+- [Anthropic: Research（研究記事一覧。記事ごとのリンクは一覧から辿る）](https://www.anthropic.com/research)
 - [RAG論文: Lewis et al., 2020 "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks"](https://arxiv.org/abs/2005.11401)
 - [Self-Consistency論文: Wang et al., 2022](https://arxiv.org/abs/2203.11171)
 
