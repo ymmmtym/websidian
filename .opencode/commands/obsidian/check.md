@@ -36,14 +36,14 @@ agent: plan
 V="content"
 
 # メール・電話・郵便番号
-rg -n -I --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
+rg -n -H --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
   -e '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' \
   -e '(\+81[ -]?)?0\d{1,4}[- ]?\d{1,4}[- ]?\d{3,4}' \
   -e '〒?\s?\d{3}[- ]?\d{4}' \
   "$V"
 
 # 住所・氏名・生年月日・ID類
-rg -n -I --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
+rg -n -H --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
   -e '(都|道|府|県).{0,10}(市|区|町|村).{0,30}(丁目|番地|号|\d+-\d+-\d+)' \
   -e '(マンション|アパート|ハイツ|コーポ|邸|方)' \
   -e '(氏名|お名前|担当者|宛名|生年月日|誕生日)' \
@@ -52,14 +52,14 @@ rg -n -I --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
   "$V"
 
 # マイナンバー・カード・口座
-rg -n -I --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
+rg -n -H --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
   -e '(マイナンバー|個人番号).{0,20}\d{12}' \
   -e '(カード番号|クレジットカード).{0,20}\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}' \
   -e '(銀行|支店|口座番号|振込先)' \
   "$V"
 
 # ネットワーク・端末情報
-rg -n -I --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
+rg -n -H --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
   -e '\b(?:\d{1,3}\.){3}\d{1,3}\b' \
   -e '\b(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}\b' \
   -e '(SSID|ssid)\s*[:=]' \
@@ -69,7 +69,7 @@ rg -n -I --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
   "$V"
 
 # ローカルパス・URL 内の認証情報・クエリトークン
-rg -n -I --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
+rg -n -H --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
   -e '/Users/[^/[:space:]]+|/home/[^/[:space:]]+' \
   -e '://[^/[:space:]:@]+:[^/[:space:]@]+@' \
   -e '[?&](token|key|sig|signature|access_token|api_key)=' \
@@ -88,14 +88,14 @@ git config --global user.name
 git config --global user.email
 ```
 
-得られた空でない値を `rg -F --hidden --no-ignore` で content/ 内検索してください（隠しディレクトリ内の `content/draft/` も対象に含める）。これらの値はレポートではマスクしてください。
+得られた空でない値を `rg -F -H --hidden --no-ignore` で content/ 内検索してください（隠しディレクトリ内の `content/draft/` も対象に含める）。これらの値はレポートではマスクしてください。
 
 ### 2-2. 秘密情報
 
 ```bash
 V="content"
 
-rg -n -I --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
+rg -n -H --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
   -e '-----BEGIN [A-Z ]*PRIVATE KEY-----' \
   -e '\bAKIA[0-9A-Z]{16}\b' \
   -e '\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}\b' \
@@ -122,10 +122,10 @@ rg -n -I --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
 V="content"
 
 # Wiki リンク
-rg -n -o -I --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' '!?\[\[[^]]+\]\]' "$V"
+rg -n -o -H --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' '!?\[\[[^]]+\]\]' "$V"
 
 # Markdown のローカルリンク（http/https/mailto/アンカーのみを除外）
-rg -n -o -I --pcre2 --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
+rg -n -o -H --pcre2 --hidden --no-ignore --glob '*.md' --glob '!.obsidian/**' \
   '\[[^]]*\]\((?!https?://|mailto:|#)[^)]+\)' "$V"
 ```
 
