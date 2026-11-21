@@ -124,7 +124,8 @@ Supabase の採用判断から、React + TypeScript + Vite での接続方法、
    - Cloudflare Pages なら `_redirects` に `/* /index.html 200` を設定します。
 
 2. **Auth のリダイレクト URL 許可リスト**
-   - メール確認やマジックリンクの戻り先を、ダッシュボードの Redirect URLs に登録しないと弾かれます。ローカル（`localhost:54321`）と本番の両方を登録します。
+   - メール確認やマジックリンクの戻り先を、ダッシュボードの Site URL と Redirect URLs に設定します。`emailRedirectTo` を指定しない `signUp` では確認後に Site URL へ戻るため、Site URL をアプリの URL に設定してください。
+   - ローカルでは Vite アプリの URL（例: `http://localhost:5173`）を Redirect URLs に登録します。`localhost:54321` は Supabase API のポートなので、アプリの URL ではありません。
 
 3. **秘密鍵が必要な処理は置けない**
    - Stripe の webhook 検証、外部 API キー利用、メール送信などはブラウザに置けません。ここだけ **Edge Functions** に逃がします。
@@ -171,15 +172,20 @@ export const supabase = createClient<Database>(
 ### 呼び出し例
 
 ```ts
-// ユーザー登録（ユーザー作成・ハッシュ化・確認メール・セッション発行まで完了）
+// ユーザー登録（メール確認が有効な場合、session は null になります）
 const { data, error } = await supabase.auth.signUp({ email, password })
+if (error) throw error
 
-// データ追加（user_id は DB 側で自動セット）
-const { data: post, error: insertError } = await supabase
-  .from('posts')
-  .insert({ title: 'はじめての投稿' })
-  .select()
-  .single()
+if (data.session) {
+  // データ追加（user_id は DB 側で自動セット）
+  const { data: post, error: insertError } = await supabase
+    .from('posts')
+    .insert({ title: 'はじめての投稿' })
+    .select()
+    .single()
+} else {
+  // メール確認待ちです。確認後にサインインしてから投稿を追加します。
+}
 
 // セッション管理（localStorage に保存され、自動でトークン更新される）
 supabase.auth.onAuthStateChange((_event, session) => {
@@ -187,7 +193,7 @@ supabase.auth.onAuthStateChange((_event, session) => {
 })
 ```
 
-API エンドポイントの設計も、CORS 設定も、認証ミドルウェアも不要です。
+API エンドポイントの設計も、CORS 設定も、認証ミドルウェアも不要です。メール確認が有効な場合は、確認が完了するまで認証済みとして投稿を追加できない点に注意してください。
 
 ## 環境変数とビルドの注意点
 
@@ -318,9 +324,13 @@ create trigger on_auth_user_created
    docker compose up -d
    ```
 
-4. **リバースプロキシで HTTPS 化します**
+4. **公開 URL を設定します**
 
-   Nginx、Caddy、Cloudflare Tunnel などを前面に置き、API ゲートウェイ（Kong: 8000）や Studio（3000）へルーティングします。
+   `.env` の `API_EXTERNAL_URL` に公開 HTTPS API URL（例: `https://api.example.com`）、`SITE_URL` にアプリの URL（例: `https://app.example.com`）を設定します。メール確認や OAuth の戻り先は localhost のままだと機能しないため、明示的に変更してください。
+
+5. **リバースプロキシで HTTPS 化します**
+
+   Nginx、Caddy、Cloudflare Tunnel などを前面に置き、API ゲートウェイ（Kong: 8000）や Studio（3000）へルーティングします。本番ではプロキシの HTTPS ポート（80/443）のみを公開し、Kong と Studio のホストポートは公開しないか localhost にバインドします。プロキシと同じ Docker ネットワークで動かす場合は `docker-compose.yml` の Kong のホストポート公開を無効にし、ファイアウォールでそれ以外の受信ポートを遮断します。
 
 ### メリット
 
@@ -337,7 +347,7 @@ create trigger on_auth_user_created
 ### どちらを選ぶか
 
 - **開発〜初期リリース**：クラウドの無料プランで始めます。「インフラ保守に時間を取られないこと」が最大の価値です。
-- **データ量が増えた / $25 を節約したい / スリープを防ぎたい**：そのタイミングで VPS + Docker Compose へ移行します。中身は同じ PostgreSQL なので `pg_dump` / `pg_restore` で移行は容易です。
+- **データ量が増えた / $25 を節約したい / スリープを防ぎたい**：そのタイミングで VPS + Docker Compose へ移行します。中身は同じ PostgreSQL なので `pg_dump` / `pg_restore` で移行は容易です。ただし、これでは Storage のメタデータのみが移り、ファイル本体は移りません。Storage オブジェクトは別途コピーし、移行先でアクセスできることを確認してからプロジェクトを切り替えます。
 
 ## 代替サービスの比較
 
@@ -432,22 +442,21 @@ resource "supabase_project" "production" {
   instance_size     = "micro"
 }
 
-# 認証設定（リダイレクト URL・SMTP など）
-resource "supabase_auth_config" "production" {
+# 認証設定（Site URL・リダイレクト URL など）
+resource "supabase_settings" "production" {
   project_ref = supabase_project.production.id
 
-  site_url = "https://my-app.pages.dev"
-  uri_allow_list = [
-    "https://my-app.pages.dev/**",
-    "http://localhost:5173/**",
-  ]
-  smtp_admin_email = "admin@example.com"
-  smtp_host        = "smtp.resend.com"
-  smtp_port        = 465
-  smtp_user        = "resend"
-  smtp_pass        = var.resend_api_key
+  auth = jsonencode({
+    site_url       = "https://my-app.pages.dev"
+    uri_allow_list = [
+      "https://my-app.pages.dev/**",
+      "http://localhost:5173/**",
+    ]
+  })
 }
 ```
+
+`supabase_settings` の `auth` は API 形式の JSON 文字列です。SMTP 設定もこの JSON に API 形式で含めます（詳細は [Settings リソースのドキュメント](https://registry.terraform.io/providers/supabase/supabase/1.5.1/docs/resources/settings)）。`~> 1.0` の制約では `supabase_auth_config` は使用できません。
 
 ### 既存プロジェクトを Terraform 管理下に置く
 
