@@ -30,6 +30,7 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 - 公開をやめるときは `content/` のファイルを削除してコミットする。トップページの一覧はビルド時に自動更新される。
 - `content/draft/` を除外する設定は `.gitignore` と `quartz.config.yaml` の `ignorePatterns` の2箇所。片方だけだとローカルビルドか Git のどちらかで漏れる。
 - ビルド時の `point to pages that are not on the site` 警告は、未公開ノートへの `[[wikilink]]` によるもの。失敗ではない。
+- Mermaid は `diagramRenderer: pele` を使う（既定の `mermaid` は不可）。mermaid.js 版は描画前に `innerText` を `innerHTML` へ書き戻すため、図の中の `<token>` のような山カッコが HTML タグとして解釈され、`Syntax error in text` になる。`pele` はこの往復をせず `<br/>` も改行として描画する。プラグイン側でも mermaid.js は非推奨。
 - `quartz.config.yaml` の `configuration.baseUrl` は公開 URL と一致させる（現在 `websidian.yumenomatayume.net`）。カスタムドメインのルート配信なのでパスは含めない。ドメインを変えたら更新する。
 - ノートを追加してもトップページのリンク一覧は更新不要（`plugins/home-page/` がビルド時に生成する）。
 
