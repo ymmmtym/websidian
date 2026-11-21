@@ -9,6 +9,7 @@
 ```
 content/               Obsidian の Vault（ここを直接編集する）
   draft/               下書き（Git・サイトともに除外、Obsidian からは見える）
+.opencode/commands/obsidian/  Obsidian ノート用の OpenCode コマンド
 quartz/                Quartz 本体（アップストリーム由来）
 plugins/home-page/     トップページをビルド時に生成するローカルプラグイン
 quartz.config.yaml     サイト設定（タイトル・baseUrl・テーマ・プラグイン）
@@ -56,6 +57,18 @@ npm ci
 トップページ（`/`）は `plugins/home-page/` のローカルプラグインがビルド時に生成します。`content/` のノートから一覧を作るので、記事を追加しても手動でリンクを更新する必要はありません。
 
 プラグインの設定を変更したら `npx quartz plugin install` を実行してください。
+
+## Obsidian コマンド
+
+このリポジトリを OpenCode で開くと、以下のスラッシュコマンドが使えます（`.opencode/commands/obsidian/` で管理）。
+
+| コマンド            | 内容                                                            |
+| ------------------- | --------------------------------------------------------------- |
+| `/obsidian/chat`    | チャットのやり取りを `content/` のノートにまとめる              |
+| `/obsidian/check`   | `content/` を読み取り専用で監査する（個人情報・リンク切れなど） |
+| `/obsidian/publish` | `content/draft/` の下書きを `content/` のノートへ昇格させる     |
+
+`/obsidian/check` は下書き（`content/draft/`）も監査対象に含みます。公開前に個人情報や秘密情報が混入していないか確認してください。
 
 ## サイト設定
 

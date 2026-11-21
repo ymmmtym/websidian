@@ -8,12 +8,14 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 - `content/` は Obsidian で直接編集する Vault。Git にコミットしたノートが公開される。
 - トップページ（`/`）は `plugins/home-page/` のローカルプラグインがビルド時に生成する。`content/index.md` は置かない。
 - 下書きは `content/draft/` に置く。`.gitignore` と `quartz.config.yaml` の `ignorePatterns` で除外しており、Git にもサイトにも出ない。
+- Obsidian ノート用の OpenCode コマンドは `.opencode/commands/obsidian/`（`chat` / `check` / `publish`）。パスはリポジトリ直下の `content/` を前提にする。
 - プラグインは npm パッケージ（`@quartz-community/*`, `@quartz-themes/*`）または `plugins/` 配下のローカルプラグイン（`home-page`）。設定に追加したら `npx quartz plugin install` を実行する。
 - タブ UI は採用していない（`@quartz-community/stacked-pages` は `enabled: false`）。以前は上部の横タブバーとして使っていたが、不要になったため無効化した。再有効化する場合は `quartz.config.yaml` の `stacked-pages` を `enabled: true` に戻す（見た目はプラグイン標準の左右の縦タブになる）。
 - `public/`（ビルド成果物）と `node_modules/` はコミットしない。
 
 ## コマンド
 
+- Obsidian ノート用: `/obsidian/chat`（要約して `content/` に保存）, `/obsidian/check`（読み取り専用の監査。`draft/` も対象）, `/obsidian/publish`（`draft/` → `content/` へ昇格）
 - プレビュー: `npx quartz build --serve` → <http://localhost:8080>
 - テスト: `npm test`（Quartz 本体のユニットテストのみ。`content/` は対象外）
 - 型・整形: `npm run check` / 自動修正は `npm run format`
