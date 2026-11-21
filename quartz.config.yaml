@@ -124,16 +124,7 @@ plugins:
       unlistWhenEncrypted: false
       outputPath: static/encryptedContentIndex.json
   - source: "@quartz-community/stacked-pages"
-    enabled: true
-    options:
-      maxTabs: 8
-      showSpines: false
-      # 0 にするとスマートフォンでもタブバーを表示する（レイアウトは custom.scss 側で調整）
-      mobileBreakpoint: 0
-    layout:
-      position: afterBody
-      priority: 50
-      display: all
+    enabled: false
   - source: "@quartz-community/alias-redirects"
     enabled: true
   - source: "@quartz-community/favicon"
