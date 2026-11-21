@@ -6,7 +6,7 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 
 - `quartz/` は上流 [jackyzha0/quartz](https://github.com/jackyzha0/quartz) v5 のコピー。原則として編集しない。サイトのカスタマイズは `quartz.config.yaml`（v5 は TS ではなく **YAML**）で行う。
 - `content/` は Vault から同期される生成物。**直接編集しない**（例外は `content/index.md`）。次回の同期で上書きされる。
-- 公開対象は `vault-publish.txt` に列挙したパスだけ。Vault 全体（`agents/`, `draft/` など）は公開しない。
+- 公開ルートは Vault 内の `knowledge/`。公開対象はその中の `vault-publish.txt` に列挙したパスだけ。`agents/`, `draft/` などは公開しない。
 - プラグインは npm パッケージ（`@quartz-community/*`, `@quartz-themes/*`）。設定に追加したら `npx quartz plugin install` を実行する。
 - タブ UI は `@quartz-community/stacked-pages` の有効化で実現している（自前実装しない）。履歴は `sessionStorage` 保存、`mobileBreakpoint`（既定 800px）未満では非表示。
 - タブバーの見た目は `quartz/styles/custom.scss` でプラグインの CSS を上書きして上部の横タブにしている（`quartz/styles/` はサイト側のカスタマイズ用。`quartz/` の他のファイルは編集しない）。`stacked-pages` を外す場合はこの上書きも削除する。
@@ -20,7 +20,8 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 - PR を出すと `.github/workflows/test.yml` が `npm run check` → `npm test` → `npx quartz build` を実行する。ローカルで確認する場合もこの3つを通す。
 - ノート同期: `./scripts/sync-from-vault.sh [--dry-run]`
   - Vault の既定パスは `~/Documents/Obsidian Vault`。`OBSIDIAN_VAULT` で上書きする
-  - 同期対象は `vault-publish.txt`（Vault からの相対パス）
+  - 公開ルートの既定は Vault 内の `knowledge/`。`VAULT_ROOT` で上書きする
+  - 同期対象は `vault-publish.txt`（公開ルートからの相対パス）、同期先は `content/` 直下
 
 ## 壊しやすいポイント
 
