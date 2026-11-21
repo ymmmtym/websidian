@@ -9,7 +9,7 @@ created: 2026-10-22
 ---
 ## 概要
 
-自宅LAN内のDNSサーバーで名前解決しているサービスに、mkcert で発行したルートCAを各端末へ配布し、ブラウザの「保護されていない通信」の警告を出さずにアクセスできるようにする手順をまとめる。各OS（macOS / Windows / iOS / iPadOS / Android / Firefox）の信頼ストアへの登録方法、配布した証明書が本物かの照合、困ったときの確認ポイントを扱う。
+自宅LAN内のDNSサーバーで名前解決しているサービスに、mkcert で発行したルートCAを各端末へ配布し、ブラウザの「保護されていない通信」の警告を出さずにアクセスできるようにする手順をまとめる。各OS（macOS / Windows / iOS / iPadOS / Android / Firefox）の信頼ストアへの登録方法、登録前に配布した証明書が本物かを照合する手順、困ったときの確認ポイントを扱う。
 
 ## 全体像
 
@@ -25,7 +25,7 @@ created: 2026-10-22
   │
   └── SHA-256 指紋を控える ──▶ [パスワード管理 / 紙メモ]
                                      │
-                                     └── 各端末でインストール後に照合 ◀──┘
+                                     └── 各端末でインストール前に照合 ◀──┘
 ```
 
 **重要原則**
@@ -52,7 +52,7 @@ mkcert -CAROOT
 
 ### 指紋（SHA-256）を控える
 
-配布した証明書が本物かどうかを後で確認するために、**必ず事前に控えておく**。
+各端末で信頼ストアへ登録する前に本物かどうかを確認するために、**必ず事前に控えておく**。
 
 ```bash
 openssl x509 -in "$(mkcert -CAROOT)/rootCA.pem" -noout -fingerprint -sha256
@@ -103,17 +103,22 @@ Synology の Web Station、QNAP の Web サーバー、ASUSTOR などがWebサ�
 
 ## 端末ごとのインストール手順
 
+> [!warning] 信頼ストアへ登録する前に必ず照合する
+> どの端末でも、NAS などからコピーした `rootCA.pem` / `rootCA.crt` の SHA-256 指紋を、事前に控えた値と照合してから登録する。不一致なら登録を中止し、配布元と転送経路を確認する。照合方法は後述の「信頼ストアへ登録する前の照合」を参照。
+
 ### macOS（Mac 本体）
 
-通常は `mkcert -install` 実行済みのため作業不要である。別のMacで信頼させたい場合は、`rootCA.pem` を置いたフォルダーを `CAROOT` に指定して実行する。CAROOT を指定しないと、既存の CA がない環境では新しい CA と秘密鍵が作成されてしまう。
+通常は `mkcert -install` 実行済みのため作業不要である。別のMacで信頼させたい場合は、`rootCA.pem` を置いたフォルダーを `CAROOT` に指定して実行する。CAROOT を指定しないと、既存の CA がない環境では新しい CA と秘密鍵が作成されてしまう。信頼ストアへの登録前に、コピーしたファイルの指紋を事前に控えた値と照合し、不一致なら以降のコマンドを実行しない。
 
 ```bash
 mkdir -p ~/ca-root
 cp /Volumes/public/certs/rootCA.crt ~/ca-root/rootCA.pem
+openssl x509 -in ~/ca-root/rootCA.pem -noout -fingerprint -sha256
+# 表示された値が事前に控えた値と一致することを確認してから実行する
 CAROOT=~/ca-root mkcert -install
 ```
 
-またはキーチェーンに直接登録：
+またはキーチェーンに直接登録（上の照合が済んでいること）：
 
 ```bash
 sudo security add-trusted-cert -d -r trustRoot \
@@ -224,14 +229,14 @@ openssl s_client -connect myserver.home.arpa:443 -servername myserver.home.arpa 
 curl -v --cacert ~/ca-root/rootCA.pem https://myserver.home.arpa/
 ```
 
-### 配布した証明書が本物かの照合
+### 信頼ストアへ登録する前の照合
 
 ```bash
-# 端末側で、ダウンロードしたファイルの指紋を表示
+# 端末側で、ダウンロードしたファイルの指紋を表示（登録前に実行）
 openssl x509 -in rootCA.crt -noout -fingerprint -sha256
 ```
 
-表示された値を、**事前に控えた値**（NAS とは別の場所に保管したもの）と文字単位で一致するか確認すること。
+表示された値を、**事前に控えた値**（NAS とは別の場所に保管したもの）と文字単位で一致するか確認してから、信頼ストアへ登録する。不一致なら登録せず、配布元と転送経路を確認する。証明書を信頼した後に気づいても、攻撃者の CA が既に信頼された状態になる。
 
 ## 運用メモ
 
@@ -285,7 +290,7 @@ openssl s_client -connect myserver.home.arpa:443 -servername myserver.home.arpa 
 ## まとめ
 
 - 配るのは `rootCA.pem`（`.crt` にリネームしたコピー）だけで、**秘密鍵 `rootCA-key.pem` は絶対に配らない**。漏れると全区間の通信が傍受可能になる。
-- 配布前に SHA-256 指紋を控え、配布後に各端末で照合する。
+- 配布前に SHA-256 指紋を控え、各端末では信頼ストアへ登録する前に照合する。
 - 各端末での登録先は OS ごとに異なる（macOS=キーチェーン、Windows=信頼されたルート証明機関、iOS=証明書信頼設定の完全な信頼、Android=CA証明書＋アプリ側のNetwork Security Config、Firefox=NSS）。
 - iOS は「プロファイルインストール」だけでは不十分で、**「完全な信頼」の有効化**が必要。
 - リーフ証明書の更新はサーバー側だけで完結する。NASは読み取り専用にして更新はMacから行う。

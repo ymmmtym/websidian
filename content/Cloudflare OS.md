@@ -46,11 +46,11 @@ Cloudflare社内で先行運用されていたものをApache 2.0でOSS化し、
 
 - 各外部サービスへの接続を仲介する専用Worker(MCPサーバーの強化版と説明されている)
 - 副作用のある操作は人間の承認が必要だが、**非同期承認**が可能。エージェントは承認待ちで止まらず、結果をシミュレートしながら処理を継続でき、人間は後でまとめて承認/却下できる
-- 例外: MCP Gatekeeper では書き込みをシミュレートできないため、承認待ちの間エージェントが停止する。後でまとめて承認できる前提で作業を任せると途中で止まる
+- 例外: MCP Gatekeeper では書き込みをシミュレートできないため、承認待ちの間エージェントが停止する。後でまとめて承認できる前提で作業を任せると途中で止まる。ただしサーバーが `readOnlyHint: true` を付けたツールは承認なしで実行され、誤ったラベルなら副作用のある操作もそのまま動く。信頼できるサーバーだけを接続する
 
 ### 導入方法
 
-1. **ローカル実行**: `cloudflare-os` リポジトリを clone してディレクトリに移動し、pnpm を用意した上で `pnpm run-local` → `localhost:8787`。`wrangler`+`workerd`でローカル完結。Cloudflareアカウント不要、本番用途ではない
+1. **ローカル実行**: `cloudflare-os` リポジトリを clone してディレクトリに移動し、pnpm を用意した上で `pnpm run-local` → `localhost:8787`。起動後にアカウントを作成し、Providers からモデルを1つ登録する（外部プロバイダーは API キー、手元で推論する場合は Ollama のエンドポイントを指定）。ここでの「ローカル完結」は実行基盤が `wrangler`+`workerd` で動くことを指し、モデルの推論までローカルで行うとは限らない。Cloudflareアカウント不要、本番用途ではない
 2. **自分のCloudflareアカウントへデプロイ**: `os.cloudflare.app/deploy` のオンラインフロー、またはより高度な設定向けの `cloudflare-os-starter` リポジトリ。Workers, KV, R2, Durable Objects, Dynamic Worker Loaders, Workers AI, AI Gatewayが必要
 3. **自前サーバーで`workerd`のみで完結**: `workerd` 上での実行自体は上流READMEに記載があるが、デプロイ用のドキュメントとツールは **Coming Soon(未整備)**。Cloudflareクラウドへの依存を完全に切り離す手順はまだない
 

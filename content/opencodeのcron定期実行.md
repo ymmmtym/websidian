@@ -145,7 +145,7 @@ jobs:
 
 > [!note] schedule イベントの注意
 > スケジュール実行には `prompt` 必須。ユーザーコンテキストがないため、PR 作成等には `contents: write` と `pull-requests: write` の権限付与が必要。出力はログと PR に反映される（コメント先のissueがないため）。
-> 同時実行の重複防止は既定では行われない。上の例の `concurrency` で直列化する（`cancel-in-progress: false` なら前回の完了を待つ）。
+> 同時実行の重複防止は既定では行われない。上の例の `concurrency` は、同じグループの実行を同時に 1 件だけに制限する。`cancel-in-progress: false` の場合、実行中の run は完了まで継続する。ただし、待機中（pending）の run は既定の `queue: single` では新しい run に置き換えられる。複数の run を順に待たせる場合は `queue: max` を指定する（待機上限は 100 件。超過分はキャンセルされる）。
 
 ## 代替手段 4: OS cron + opencode run
 

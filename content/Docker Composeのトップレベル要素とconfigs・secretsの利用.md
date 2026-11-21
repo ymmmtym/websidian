@@ -213,7 +213,7 @@ cat /run/secrets/db-password        # secrets
 3. コンテナ内の既定マウントパス（`/設定名` `/run/secrets/名前`）をアプリの設定・起動時引数・環境変数で参照
 
 > [!tip] 注意点
-> - `uid` / `gid` / `mode` は **`environment` ソースの secret でのみ有効**。`file` ソースでは bind-mount が使われるため無視される
+> - Docker Compose では、`uid` / `gid` / `mode` は **`environment` ソースの secret でのみ有効**。`file` ソースでは bind-mount が使われるため無視される
 > - `environment` ソースの secret は `docker stack deploy`（Swarm）では非対応。逆に `external` ソースは `docker compose up` では使えず、stack deploy 向け
 
 ## name / version — プロジェクト設定
