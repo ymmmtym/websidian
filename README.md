@@ -1,28 +1,27 @@
 # websidian
 
-Obsidian Vault のノートを [Quartz v5](https://quartz.jzhao.xyz/) で静的サイト化し、GitHub Pages で公開するためのリポジトリです。
+このリポジトリの `content/` を Obsidian の Vault として開き、[Quartz v5](https://quartz.jzhao.xyz/) で静的サイト化して GitHub Pages で公開します。
 
 公開 URL: <https://websidian.yumenomatayume.net/>
 
 ## 構成
 
 ```
-content/               公開するノート（Vault の knowledge/ がこの直下に対応）
+content/               Obsidian の Vault（ここを直接編集する）
+  draft/               下書き（Git・サイトともに除外、Obsidian からは見える）
+.opencode/commands/obsidian/  Obsidian ノート用の OpenCode コマンド
 quartz/                Quartz 本体（アップストリーム由来）
 plugins/home-page/     トップページをビルド時に生成するローカルプラグイン
 quartz.config.yaml     サイト設定（タイトル・baseUrl・テーマ・プラグイン）
-vault-publish.txt      公開対象のノート一覧（公開ルートからの相対パス）
-scripts/sync-from-vault.sh  Vault → content/ の同期スクリプト
 .github/workflows/deploy.yml  GitHub Pages へのデプロイ
 ```
 
-`content/` の中身は Vault から生成される想定です。直接編集せず、Vault 側を編集して同期してください。トップページは `plugins/home-page/` がビルド時に生成するので、`content/index.md` は置きません。
+`content/` を Obsidian で開いてノートを直接編集します。Git にコミットした `.md` がサイトに公開されます。トップページは `plugins/home-page/` がビルド時に生成するので、`content/index.md` は置きません。
 
 ## 前提
 
 - Node.js 22 以上 / npm 10.9.2 以上
-- Vault の場所: `~/Documents/Obsidian Vault`（`OBSIDIAN_VAULT` 環境変数で変更可）
-- 公開ルート: Vault 内の `knowledge/`（`VAULT_ROOT` 環境変数で変更可）
+- Obsidian でこのリポジトリの `content/` を Vault として開く
 
 ## セットアップ
 
@@ -42,21 +41,8 @@ npm ci
 
 ## ノートを公開する
 
-1. `vault-publish.txt` に公開したいノート（またはディレクトリ）を公開ルート（`knowledge/`）からの相対パスで追記する
-
-   ```
-   some-note.md
-   another-directory/
-   ```
-
-2. 同期する
-
-   ```bash
-   ./scripts/sync-from-vault.sh --dry-run   # 確認
-   ./scripts/sync-from-vault.sh             # 実行
-   ```
-
-3. ローカルで確認する
+1. Obsidian で `content/` を開き、ノートを作成・編集する
+2. ローカルで確認する
 
    ```bash
    npx quartz build --serve
@@ -64,13 +50,25 @@ npm ci
 
    <http://localhost:8080> でプレビューできます。
 
-4. 変更をコミットして push すると、GitHub Actions がビルドして GitHub Pages にデプロイします。
+3. 変更をコミットして push すると、GitHub Actions がビルドして GitHub Pages にデプロイします。
 
 ## トップページ
 
-トップページ（`/`）は `plugins/home-page/` のローカルプラグインがビルド時に生成します。`content/` に同期されたノートから一覧を作るので、記事を追加しても手動でリンクを更新する必要はありません。
+トップページ（`/`）は `plugins/home-page/` のローカルプラグインがビルド時に生成します。`content/` のノートから一覧を作るので、記事を追加しても手動でリンクを更新する必要はありません。
 
 プラグインの設定を変更したら `npx quartz plugin install` を実行してください。
+
+## Obsidian コマンド
+
+このリポジトリを OpenCode で開くと、以下のスラッシュコマンドが使えます（`.opencode/commands/obsidian/` で管理）。
+
+| コマンド            | 内容                                                            |
+| ------------------- | --------------------------------------------------------------- |
+| `/obsidian/chat`    | チャットのやり取りを `content/` のノートにまとめる              |
+| `/obsidian/check`   | `content/` を読み取り専用で監査する（個人情報・リンク切れなど） |
+| `/obsidian/publish` | `content/draft/` の下書きを `content/` のノートへ昇格させる     |
+
+`/obsidian/check` は下書き（`content/draft/`）も監査対象に含みます。公開前に個人情報や秘密情報が混入していないか確認してください。
 
 ## サイト設定
 
@@ -100,7 +98,7 @@ npm ci
 
 ## 公開範囲について
 
-このリポジトリは public を想定しています。Vault の `knowledge/` のうち `vault-publish.txt` に載せたノートだけが `content/` に入るので、`agents/` や `draft/` などは公開されません。個人情報や社外秘の情報を含むノートを追加しないよう注意してください。
+このリポジトリは public を想定しています。`content/` のうち Git にコミットしたノートだけが公開されます。下書きは `content/draft/` に置いてください。このディレクトリは `.gitignore` と Quartz の `ignorePatterns` の両方で除外しているので、Obsidian からは見えますが Git にもサイトにも出ません。個人情報や社外秘の情報を含むノートをコミットしないよう注意してください。
 
 ## Quartz の更新
 
