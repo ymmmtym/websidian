@@ -253,6 +253,8 @@ plugins:
       darkMode: auto
       exportPadding: 20
     order: 50
+  - source: ./plugins/home-page
+    enabled: true
 layout:
   groups:
     toolbar:
@@ -265,6 +267,7 @@ layout:
         beforeBody: []
         left: []
         right: []
+    home: {}
     content: {}
     folder:
       exclude:

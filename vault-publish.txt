@@ -1,4 +1,4 @@
-# 公開するノート（Obsidian Vault からの相対パス）
+# 公開するノート（公開ルート = Vault の knowledge/ からの相対パス）
 #
 # ディレクトリを指定すると、その配下のすべての .md と添付ファイルを公開します。
 # ファイルを指定すると、そのファイルだけを公開します。
@@ -6,8 +6,8 @@
 #
 # 変更したら `./scripts/sync-from-vault.sh` を実行して content/ に反映してください。
 
-knowledge/AIエージェントのコンテキスト管理.md
-knowledge/Linuxコンテナのnamespaceとcgroups.md
-knowledge/OpenWrt技術ノート.md
-knowledge/systemd timer入門・運用メモ.md
-knowledge/Well-Knownディレクトリ.md
+AIエージェントのコンテキスト管理.md
+Linuxコンテナのnamespaceとcgroups.md
+OpenWrt技術ノート.md
+systemd timer入門・運用メモ.md
+Well-Knownディレクトリ.md

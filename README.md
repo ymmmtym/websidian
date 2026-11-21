@@ -7,22 +7,22 @@ Obsidian Vault のノートを [Quartz v5](https://quartz.jzhao.xyz/) で静的�
 ## 構成
 
 ```
-content/               公開するノート（Vault と同じディレクトリ構成）
-  knowledge/           Vault の knowledge/ から同期したノート
-  index.md             トップページ（このリポジトリで管理）
+content/               公開するノート（Vault の knowledge/ がこの直下に対応）
 quartz/                Quartz 本体（アップストリーム由来）
+plugins/home-page/     トップページをビルド時に生成するローカルプラグイン
 quartz.config.yaml     サイト設定（タイトル・baseUrl・テーマ・プラグイン）
-vault-publish.txt      公開対象のノート一覧（Vault からの相対パス）
+vault-publish.txt      公開対象のノート一覧（公開ルートからの相対パス）
 scripts/sync-from-vault.sh  Vault → content/ の同期スクリプト
 .github/workflows/deploy.yml  GitHub Pages へのデプロイ
 ```
 
-`content/` の中身は Vault から生成される想定です。直接編集せず、Vault 側を編集して同期してください（`content/index.md` だけはこのリポジトリで管理）。
+`content/` の中身は Vault から生成される想定です。直接編集せず、Vault 側を編集して同期してください。トップページは `plugins/home-page/` がビルド時に生成するので、`content/index.md` は置きません。
 
 ## 前提
 
 - Node.js 22 以上 / npm 10.9.2 以上
 - Vault の場所: `~/Documents/Obsidian Vault`（`OBSIDIAN_VAULT` 環境変数で変更可）
+- 公開ルート: Vault 内の `knowledge/`（`VAULT_ROOT` 環境変数で変更可）
 
 ## セットアップ
 
@@ -42,11 +42,11 @@ npm ci
 
 ## ノートを公開する
 
-1. `vault-publish.txt` に公開したいノート（またはディレクトリ）を Vault からの相対パスで追記する
+1. `vault-publish.txt` に公開したいノート（またはディレクトリ）を公開ルート（`knowledge/`）からの相対パスで追記する
 
    ```
-   knowledge/some-note.md
-   knowledge/another-directory/
+   some-note.md
+   another-directory/
    ```
 
 2. 同期する
@@ -65,6 +65,12 @@ npm ci
    <http://localhost:8080> でプレビューできます。
 
 4. 変更をコミットして push すると、GitHub Actions がビルドして GitHub Pages にデプロイします。
+
+## トップページ
+
+トップページ（`/`）は `plugins/home-page/` のローカルプラグインがビルド時に生成します。`content/` に同期されたノートから一覧を作るので、記事を追加しても手動でリンクを更新する必要はありません。
+
+プラグインの設定を変更したら `npx quartz plugin install` を実行してください。
 
 ## サイト設定
 
@@ -94,7 +100,7 @@ npm ci
 
 ## 公開範囲について
 
-このリポジトリは public を想定しています。`vault-publish.txt` に載せたノートだけが `content/` に入るので、Vault 全体（`agents/` や `draft/` など）は公開されません。個人情報や社外秘の情報を含むノートを追加しないよう注意してください。
+このリポジトリは public を想定しています。Vault の `knowledge/` のうち `vault-publish.txt` に載せたノートだけが `content/` に入るので、`agents/` や `draft/` などは公開されません。個人情報や社外秘の情報を含むノートを追加しないよう注意してください。
 
 ## Quartz の更新
 

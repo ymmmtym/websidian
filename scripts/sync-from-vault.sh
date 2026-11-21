@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 #
-# Obsidian Vault のノートを content/ に同期します。
+# Obsidian Vault の knowledge/ を公開ルートとして content/ に同期します。
 # 同期対象は vault-publish.txt に記載されたパスだけです。
 #
 # 使い方:
 #   ./scripts/sync-from-vault.sh              # 同期
 #   ./scripts/sync-from-vault.sh --dry-run    # 実行内容の確認のみ
 #   OBSIDIAN_VAULT=/path/to/vault ./scripts/sync-from-vault.sh
+#   VAULT_ROOT=/path/to/root ./scripts/sync-from-vault.sh
 #
 set -euo pipefail
 
 VAULT="${OBSIDIAN_VAULT:-$HOME/Documents/Obsidian Vault}"
+VAULT_ROOT="${VAULT_ROOT:-knowledge}"
 LIST_FILE="${PUBLISH_LIST:-vault-publish.txt}"
 DEST_DIR="content"
 DRY_RUN=0
@@ -19,7 +21,7 @@ for arg in "$@"; do
   case "$arg" in
     -n | --dry-run) DRY_RUN=1 ;;
     -h | --help)
-      sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -29,9 +31,9 @@ for arg in "$@"; do
   esac
 done
 
-if [[ ! -d "$VAULT" ]]; then
-  echo "Vault が見つかりません: $VAULT" >&2
-  echo "OBSIDIAN_VAULT 環境変数で Vault のパスを指定できます。" >&2
+if [[ ! -d "$VAULT/$VAULT_ROOT" ]]; then
+  echo "公開ルートが見つかりません: $VAULT/$VAULT_ROOT" >&2
+  echo "OBSIDIAN_VAULT と VAULT_ROOT 環境変数でパスを指定できます。" >&2
   exit 1
 fi
 
@@ -59,18 +61,18 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   entry="${entry#./}"
   entry="${entry%/}"
 
-  if [[ ! -e "$VAULT/$entry" ]]; then
-    echo "skip (Vault に存在しません): $entry" >&2
+  if [[ ! -e "$VAULT/$VAULT_ROOT/$entry" ]]; then
+    echo "skip (公開ルートに存在しません): $entry" >&2
     missing=$((missing + 1))
     continue
   fi
 
-  if [[ -d "$VAULT/$entry" ]]; then
+  if [[ -d "$VAULT/$VAULT_ROOT/$entry" ]]; then
     mkdir -p "$DEST_DIR/$entry"
-    rsync "${rsync_opts[@]}" "$VAULT/$entry/" "$DEST_DIR/$entry/"
+    rsync "${rsync_opts[@]}" "$VAULT/$VAULT_ROOT/$entry/" "$DEST_DIR/$entry/"
   else
     mkdir -p "$DEST_DIR/$(dirname "$entry")"
-    rsync "${rsync_opts[@]}" "$VAULT/$entry" "$DEST_DIR/$entry"
+    rsync "${rsync_opts[@]}" "$VAULT/$VAULT_ROOT/$entry" "$DEST_DIR/$entry"
   fi
   synced=$((synced + 1))
 done <"$LIST_FILE"
@@ -82,5 +84,5 @@ else
 fi
 
 if [[ $missing -gt 0 ]]; then
-  echo "$missing 件のパスが Vault に見つかりませんでした" >&2
+  echo "$missing 件のパスが公開ルートに見つかりませんでした" >&2
 fi
