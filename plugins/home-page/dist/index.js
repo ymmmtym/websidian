@@ -12,33 +12,54 @@ function isPublishedNote(data) {
   return true
 }
 
+/** タグページ（tags/index を除く）を一覧に出す */
+function isTagPage(data) {
+  return Boolean(
+    data.slug?.startsWith("tags/") && data.slug !== "tags/index" && data.unlisted !== true,
+  )
+}
+
+function titleOf(data) {
+  return data.frontmatter?.title ?? data.slug.replace(/^tags\//, "").replace(/\/index$/, "")
+}
+
+function LinkList({ items, className, fileData, linkClass = "internal" }) {
+  return h(
+    "ul",
+    { class: className },
+    items.map((item) =>
+      h(
+        "li",
+        { key: item.slug },
+        h(
+          "a",
+          { class: linkClass, href: resolveRelative(fileData.slug, item.slug) },
+          titleOf(item),
+        ),
+      ),
+    ),
+  )
+}
+
 function HomeBody({ allFiles, fileData }) {
   const pages = allFiles
     .filter(isPublishedNote)
-    .sort((a, b) =>
-      (a.frontmatter?.title ?? a.slug).localeCompare(b.frontmatter?.title ?? b.slug, "ja"),
-    )
+    .sort((a, b) => titleOf(a).localeCompare(titleOf(b), "ja"))
+  const tags = allFiles.filter(isTagPage).sort((a, b) => titleOf(a).localeCompare(titleOf(b), "ja"))
 
   return h(
     "div",
     { class: "home-page" },
     h("p", null, "Obsidian Vault で管理している技術メモを静的サイトとして公開しています。"),
     h("h2", null, "ノート"),
-    h(
-      "ul",
-      { class: "home-notes" },
-      pages.map((page) =>
-        h(
-          "li",
-          { key: page.slug },
-          h(
-            "a",
-            { class: "internal", href: resolveRelative(fileData.slug, page.slug) },
-            page.frontmatter?.title ?? page.slug,
-          ),
-        ),
-      ),
-    ),
+    h(LinkList, { items: pages, className: "home-notes", fileData }),
+    h("h2", null, "タグ"),
+    h(LinkList, {
+      items: tags,
+      className: "home-tags",
+      fileData,
+      linkClass: "internal tag-link",
+    }),
   )
 }
 
