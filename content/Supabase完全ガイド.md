@@ -342,7 +342,7 @@ create trigger on_auth_user_created
 
 4. **ゲートウェイのホストポートを絞ります**
 
-   現在の Compose の既定ゲートウェイは `api-gw`（Envoy）です。プロキシを同じ Docker ネットワークで動かす場合は `docker-compose.yml` の `api-gw` の `ports` をコメントアウトします。ホスト上の Nginx などから接続する場合は、削除せず `127.0.0.1:8000:8000` のようにループバックへバインドします（Kong オーバーライドを使う場合も `kong` が対象です）。Studio（3000）はホストポートを公開しません。
+   現在の Compose の既定ゲートウェイは `api-gw`（Envoy）です。プロキシを同じ Docker ネットワークで動かす場合は `docker-compose.yml` の `api-gw` の `ports` をコメントアウトします。ホスト上の Nginx などから接続する場合は、削除せず `127.0.0.1:8000:8000` のようにループバックへバインドします。Kong オーバーライド（`docker-compose.kong.yml`）を使う場合は、同じ変更を **8000 と 8443 の両方**について同ファイルの `api-gw` の `ports` に行います。`ports: !override` がベースの設定を置き換えるため、`docker-compose.yml` だけを変更しても反映されません。Studio（3000）はホストポートを公開しません。
 
 5. **コンテナを起動します**
 
