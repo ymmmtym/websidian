@@ -9,13 +9,14 @@ Obsidian Vault のノートを [Quartz v5](https://quartz.jzhao.xyz/) で静的�
 ```
 content/               公開するノート（Vault の knowledge/ がこの直下に対応）
 quartz/                Quartz 本体（アップストリーム由来）
+plugins/home-page/     トップページをビルド時に生成するローカルプラグイン
 quartz.config.yaml     サイト設定（タイトル・baseUrl・テーマ・プラグイン）
 vault-publish.txt      公開対象のノート一覧（公開ルートからの相対パス）
 scripts/sync-from-vault.sh  Vault → content/ の同期スクリプト
 .github/workflows/deploy.yml  GitHub Pages へのデプロイ
 ```
 
-`content/` の中身は Vault から生成される想定です。直接編集せず、Vault 側を編集して同期してください。
+`content/` の中身は Vault から生成される想定です。直接編集せず、Vault 側を編集して同期してください。トップページは `plugins/home-page/` がビルド時に生成するので、`content/index.md` は置きません。
 
 ## 前提
 
@@ -64,6 +65,12 @@ npm ci
    <http://localhost:8080> でプレビューできます。
 
 4. 変更をコミットして push すると、GitHub Actions がビルドして GitHub Pages にデプロイします。
+
+## トップページ
+
+トップページ（`/`）は `plugins/home-page/` のローカルプラグインがビルド時に生成します。`content/` に同期されたノートから一覧を作るので、記事を追加しても手動でリンクを更新する必要はありません。
+
+プラグインの設定を変更したら `npx quartz plugin install` を実行してください。
 
 ## サイト設定
 

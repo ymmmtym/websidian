@@ -1,0 +1,27 @@
+{
+  "name": "home-page",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Build-time home page with a generated list of published notes.",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "peerDependencies": {
+    "@quartz-community/utils": "^1.0.0",
+    "preact": "^10.0.0"
+  },
+  "quartz": {
+    "name": "home-page",
+    "displayName": "Home Page",
+    "description": "Build-time home page with a generated note list",
+    "category": "pageType",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.0.0",
+    "defaultOrder": 50,
+    "defaultEnabled": true,
+    "defaultOptions": {}
+  }
+}
