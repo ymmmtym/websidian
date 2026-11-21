@@ -125,7 +125,7 @@ Supabase の採用判断から、React + TypeScript + Vite での接続方法、
 
 2. **Auth のリダイレクト URL 許可リスト**
    - メール確認やマジックリンクの戻り先を、ダッシュボードの Site URL と Redirect URLs に設定します。`emailRedirectTo` を指定しない `signUp` では確認後に Site URL へ戻るため、Site URL をアプリの URL に設定してください。
-   - ローカルでは Vite アプリの URL（例: `http://localhost:5173`）を Redirect URLs に登録します。`localhost:54321` は Supabase API のポートなので、アプリの URL ではありません。
+   - ローカルでは Vite アプリの URL（例: `http://localhost:5173`）を Redirect URLs に登録します。`localhost:54321` は Supabase API のポートなので、アプリの URL ではありません。ローカルで確認フローを試す場合は、下の `signUp` の例のように `emailRedirectTo` にこのローカル URL を指定します。
 
 3. **秘密鍵が必要な処理は置けない**
    - Stripe の webhook 検証、外部 API キー利用、メール送信などはブラウザに置けません。ここだけ **Edge Functions** に逃がします。
@@ -173,7 +173,14 @@ export const supabase = createClient<Database>(
 
 ```ts
 // ユーザー登録（メール確認が有効な場合、session は null になります）
-const { data, error } = await supabase.auth.signUp({ email, password })
+const { data, error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    // 許可リストに登録したローカルのアプリ URL を指定します
+    emailRedirectTo: 'http://localhost:5173',
+  },
+})
 if (error) throw error
 
 if (data.session) {
@@ -183,6 +190,10 @@ if (data.session) {
     .insert({ title: 'はじめての投稿' })
     .select()
     .single()
+  if (insertError) {
+    // RLS や制約で拒否された場合は保存されません
+    alert(`投稿を保存できませんでした: ${insertError.message}`)
+  }
 } else {
   // メール確認待ちです。確認後にサインインしてから投稿を追加します。
 }
@@ -193,7 +204,7 @@ supabase.auth.onAuthStateChange((_event, session) => {
 })
 ```
 
-API エンドポイントの設計も、CORS 設定も、認証ミドルウェアも不要です。メール確認が有効な場合は、確認が完了するまで認証済みとして投稿を追加できない点に注意してください。
+API エンドポイントの設計も、CORS 設定も、認証ミドルウェアも不要です。メール確認が有効な場合は、確認が完了するまで認証済みとして投稿を追加できません。`emailRedirectTo` にローカル URL を指定すれば、Site URL が本番でも確認後にローカルへ戻れます（指定する URL は Redirect URLs に登録しておきます）。
 
 ## 環境変数とビルドの注意点
 
@@ -318,19 +329,30 @@ create trigger on_auth_user_created
    - `ANON_KEY` / `SERVICE_ROLE_KEY`（`JWT_SECRET` を元に生成する JWT）
    - ダッシュボード（Studio）のログインパスワード
 
-3. **コンテナを起動します**
+3. **公開 URL を `.env` に設定します（起動前に行います）**
+
+   ```env
+   # API_EXTERNAL_URL には /auth/v1 を含めます（OAuth コールバックは /auth/v1/callback になります）
+   API_EXTERNAL_URL=https://api.example.com/auth/v1
+   SITE_URL=https://app.example.com
+   SUPABASE_PUBLIC_URL=https://api.example.com
+   ```
+
+   メール確認や OAuth の戻り先は localhost のままだと機能しません。Auth は起動時にこれらの値を読み込むため、起動後に変更した場合は `docker compose up -d` を再実行してください（必要なら `sh run.sh recreate auth`）。
+
+4. **ゲートウェイのホストポートを絞ります**
+
+   現在の Compose の既定ゲートウェイは `api-gw`（Envoy）です。`docker-compose.yml` の `api-gw` の `ports` をコメントアウトするか `127.0.0.1` にバインドし、Studio（3000）も外部公開しません。Kong を使うオーバーライド（`sh run.sh config add kong`）を適用している場合は `kong` が対象です。
+
+5. **コンテナを起動します**
 
    ```bash
    docker compose up -d
    ```
 
-4. **公開 URL を設定します**
+6. **リバースプロキシで HTTPS 化します**
 
-   `.env` の `API_EXTERNAL_URL` に公開 HTTPS API URL（例: `https://api.example.com`）、`SITE_URL` にアプリの URL（例: `https://app.example.com`）を設定します。メール確認や OAuth の戻り先は localhost のままだと機能しないため、明示的に変更してください。
-
-5. **リバースプロキシで HTTPS 化します**
-
-   Nginx、Caddy、Cloudflare Tunnel などを前面に置き、API ゲートウェイ（Kong: 8000）や Studio（3000）へルーティングします。本番ではプロキシの HTTPS ポート（80/443）のみを公開し、Kong と Studio のホストポートは公開しないか localhost にバインドします。プロキシと同じ Docker ネットワークで動かす場合は `docker-compose.yml` の Kong のホストポート公開を無効にし、ファイアウォールでそれ以外の受信ポートを遮断します。
+   Nginx、Caddy、Cloudflare Tunnel などを前面に置き、API ゲートウェイ（既定は `api-gw`: 8000）や Studio（3000）へルーティングします。本番では公開するのはプロキシのポート（80/443）のみとし、ファイアウォールでそれ以外の受信ポートを遮断します。
 
 ### メリット
 
@@ -448,15 +470,12 @@ resource "supabase_settings" "production" {
 
   auth = jsonencode({
     site_url       = "https://my-app.pages.dev"
-    uri_allow_list = [
-      "https://my-app.pages.dev/**",
-      "http://localhost:5173/**",
-    ]
+    uri_allow_list = "https://my-app.pages.dev/**,http://localhost:5173/**"
   })
 }
 ```
 
-`supabase_settings` の `auth` は API 形式の JSON 文字列です。SMTP 設定もこの JSON に API 形式で含めます（詳細は [Settings リソースのドキュメント](https://registry.terraform.io/providers/supabase/supabase/1.5.1/docs/resources/settings)）。`~> 1.0` の制約では `supabase_auth_config` は使用できません。
+`supabase_settings` の `auth` は API 形式の JSON 文字列です。`uri_allow_list` は Management API の仕様上 **カンマ区切りの文字列**で渡します（配列ではありません）。SMTP 設定もこの JSON に API 形式で含めます（詳細は [Settings リソースのドキュメント](https://registry.terraform.io/providers/supabase/supabase/1.5.1/docs/resources/settings)）。`~> 1.0` の制約では `supabase_auth_config` は使用できません。
 
 ### 既存プロジェクトを Terraform 管理下に置く
 
@@ -485,7 +504,7 @@ Supabase が配っているのは、実体としては **`docker-compose.yml` �
 
 そして、それら**全部が1つの PostgreSQL を指している**。これが全体を貫く設計です。
 
-> 例えるなら、Supabase は「シェアハウスの運営」です。住人（Auth、Storage、Realtime）はそれぞれ別の会社から来た他人ですが、全員が同じ建物の同じ台所（PostgreSQL）を使い、玄関（Kong）はひとつです。Supabase は「住人を集めて配線を繋いだ大家」であって、住人本身ではありません。
+> 例えるなら、Supabase は「シェアハウスの運営」です。住人（Auth、Storage、Realtime）はそれぞれ別の会社から来た他人ですが、全員が同じ建物の同じ台所（PostgreSQL）を使い、玄関（API ゲートウェイ）はひとつです。Supabase は「住人を集めて配線を繋いだ大家」であって、住人本身ではありません。
 
 ### 3層構造
 
@@ -494,7 +513,7 @@ Supabase が配っているのは、実体としては **`docker-compose.yml` �
     │  https://xxx.supabase.co/rest/v1/...     ← 入口は1つだけ
     ▼
 ┌─────────────────────────────────────────┐
-│ ① 玄関：Kong（API ゲートウェイ）          │
+│ ① 玄関：API ゲートウェイ（Kong / api-gw） │
 │    パスで振り分けるだけ。認証はしない      │
 │    /auth/v1     → GoTrue                 │
 │    /rest/v1     → PostgREST              │
@@ -531,7 +550,7 @@ Supabase が配っているのは、実体としては **`docker-compose.yml` �
 await supabase.auth.signUp({ email, password })
 ```
 
-1. ブラウザ → Kong（`/auth/v1/signup`）→ GoTrue です。
+1. ブラウザ → API ゲートウェイ（`/auth/v1/signup`）→ GoTrue です。
 2. GoTrue が `auth.users` にパスワードのハッシュを保存します。
 3. GoTrue が **JWT に署名して返します**（中身は `{"sub": "ユーザーID", "role": "authenticated"}`）。
 4. `supabase-js` がそれを localStorage に保存し、以降のリクエストに自動で付けます。
@@ -544,7 +563,7 @@ await supabase.auth.signUp({ email, password })
 await supabase.from('posts').insert({ title: 'はじめて' })
 ```
 
-1. ブラウザ → Kong（`/rest/v1/posts`）→ PostgREST です。
+1. ブラウザ → API ゲートウェイ（`/rest/v1/posts`）→ PostgREST です。
 2. PostgREST は SQL を組み立て、Postgres に接続します。このとき**セッション変数に JWT を埋め込みます**：
 
 ```sql
@@ -566,7 +585,7 @@ select coalesce(
 
 5. `with check (auth.uid() = user_id)` が真なら挿入成功、偽なら**Postgres が拒否**します。
 
-つまり、**認可しているのは PostgREST でも Kong でもなく、PostgreSQL 自身**です。Supabase は「JWT を Postgres まで届ける配管」を用意しただけで、判断は DB に任せている。これが「API サーバーを書かなくていい」の正体です。
+つまり、**認可しているのは PostgREST でもゲートウェイでもなく、PostgreSQL 自身**です。Supabase は「JWT を Postgres まで届ける配管」を用意しただけで、判断は DB に任せている。これが「API サーバーを書かなくていい」の正体です。
 
 ### 混同しやすい4点
 
@@ -645,7 +664,7 @@ select coalesce(
 | **BaaS** | Backend as a Service です。バックエンド機能をマネージドで提供するサービスです。 |
 | **PostgREST** | PostgreSQL のテーブルを自動で REST API に変換するサーバーです。 |
 | **GoTrue** | Supabase が使う認証サーバーです。JWT を発行します。 |
-| **Kong** | API ゲートウェイです。パスを見て各サービスへ振り分けます。 |
+| **Kong / api-gw** | API ゲートウェイです。パスを見て各サービスへ振り分けます。CLI や従来構成では Kong、現在のセルフホスト Compose の既定は `api-gw`（Envoy）です。 |
 | **RLS** | Row Level Security です。行単位のアクセス制御で、PostgreSQL 標準機能です。 |
 | **JWT** | JSON Web Token です。署名付きの身分証です。 |
 | **anon key** | 未ログイン客を表す公開鍵です。誰でも持てます。 |
