@@ -16,7 +16,7 @@ created: 2026-09-07
 ---
 ## 概要
 
-**OpenWrt** は、ルーターや組み込みデバイス向けのLinuxベースのオープンソースOSです。家庭用ルーターのファームウェアを置き換えて使い、SSHでログインしてシェル操作ができるため、通常のLinuxサーバーに近い感覚で扱えます。本書はOpenWrtをSRE的な観点（トラフィック制御・監視・障害検証など）で活用し、ベンダーロックインを回避するための技術ノートです。
+**OpenWrt** は、ルーターや組み込みデバイス向けのLinuxベースのオープンソースOSである。家庭用ルーターのファームウェアを置き換えて使い、SSHでログインしてシェル操作ができるため、通常のLinuxサーバーに近い感覚で扱える。本書はOpenWrtをSRE的な観点（トラフィック制御・監視・障害検証など）で活用し、ベンダーロックインを回避するための技術ノートである。
 
 ## アーキテクチャ
 
@@ -106,7 +106,7 @@ iptables -A OUTPUT -m statistic --mode random --probability 0.3 -j DROP
 
 ## NURO光との組み合わせ
 
-NURO光はONU（ソニー製またはZTE製）を無料レンタルするが、取り外し不可。ONUにはルーター機能があるため、OpenWrtルーターはその配下に置く構成になります。
+NURO光はONU（ソニー製またはZTE製）を無料レンタルするが、取り外し不可。ONUにはルーター機能があるため、OpenWrtルーターはその配下に置く構成になる。
 
 ```
 [NURO光回線]
@@ -129,7 +129,7 @@ NURO光はONU（ソニー製またはZTE製）を無料レンタルするが、�
 
 ### UniFiとは
 
-Ubiquiti社のエンタープライズ向けネットワーク製品ブランド。ルーター・スイッチ・AP・監視カメラを統合管理できます。
+Ubiquiti社のエンタープライズ向けネットワーク製品ブランド。ルーター・スイッチ・AP・監視カメラを統合管理できる。
 
 ### 主力機：UniFi Dream Router 7（UDR7）
 
@@ -259,7 +259,7 @@ open http://localhost:8006
 
 ### ExtRoot（USBストレージ拡張）
 
-OpenWrtのoverlay（書き込み領域）をUSBメモリやUSB-SSDに移動する仕組み。内部Flashが少なくても実質無制限に近いストレージを確保できます。
+OpenWrtのoverlay（書き込み領域）をUSBメモリやUSB-SSDに移動する仕組み。内部Flashが少なくても実質無制限に近いストレージを確保できる。
 
 ```bash
 opkg install block-mount kmod-fs-ext4 kmod-usb3 e2fsprogs parted
@@ -306,7 +306,7 @@ HUNSN RJ03（M.2 NVMe×2・2.5GbE×4・N100搭載）等のミニPCにOpenWrt x86
   └── collectd + Prometheusで監視
 ```
 
-Amazon Japanで2.8万円程度から購入可能。ProxmoxでVM化すると柔軟性がさらに上がります。
+Amazon Japanで2.8万円程度から購入可能。ProxmoxでVM化すると柔軟性がさらに上がる。
 
 ### 用途別推奨
 

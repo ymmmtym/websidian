@@ -12,13 +12,13 @@ Linux の systemd が提供する定期実行の仕組み（timer）について
 
 ## systemd timer とは
 
-systemd timer は、Linux の systemd が提供する定期実行の仕組みです。実行する時刻・間隔を `.timer` ユニットに定義し、実際に行う処理は `.service` ユニットに定義します。cron と同じく定期ジョブを実行できますが、systemd のサービス管理・依存関係・journal ログなどと連携できます。
+systemd timer は、Linux の systemd が提供する定期実行の仕組みである。実行する時刻・間隔を `.timer` ユニットに定義し、実際に行う処理は `.service` ユニットに定義する。cron と同じく定期ジョブを実行できるが、systemd のサービス管理・依存関係・journal ログなどと連携できる。
 
-systemd は2010年ごろに開発が始まり、2010年代半ばから主要なLinuxディストリビューションで広く採用されました。timer は新しい流行技術というより、現在では十分に実績のある systemd の機能です。一方、cron も今なお広く使われており、timer がすべての環境で cron を置き換えたわけではありません。
+systemd は2010年ごろに開発が始まり、2010年代半ばから主要なLinuxディストリビューションで広く採用された。timer は新しい流行技術というより、現在では十分に実績のある systemd の機能である。一方、cron も今なお広く使われており、timer がすべての環境で cron を置き換えたわけではない。
 
 ## `.service` と `.timer` の2ファイル
 
-例として、毎日午前3時に `/usr/local/bin/backup.sh` を実行する設定です。
+例として、毎日午前3時に `/usr/local/bin/backup.sh` を実行する設定である。
 
 `/etc/systemd/system/backup.service`
 
@@ -31,7 +31,7 @@ Type=oneshot
 ExecStart=/usr/local/bin/backup.sh
 ```
 
-`Type=oneshot` は、処理を1回実行して終了するジョブに使います。
+`Type=oneshot` は、処理を1回実行して終了するジョブに使う。
 
 `/etc/systemd/system/backup.timer`
 
@@ -47,7 +47,7 @@ Persistent=true
 WantedBy=timers.target
 ```
 
-同じ名前の `.service` があれば、timer は通常それを起動します。別名のサービスを起動したい場合は、`.timer` の `[Timer]` に `Unit=別の名前.service` を指定できます。
+同じ名前の `.service` があれば、timer は通常それを起動する。別名のサービスを起動したい場合は、`.timer` の `[Timer]` に `Unit=別の名前.service` を指定できる。
 
 ## 設定を反映して有効化する
 
@@ -56,7 +56,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now backup.timer
 ```
 
-定期実行を有効にするのは `.service` ではなく **`.timer`** です。`.service` はスケジュールを待たずに手動実行するときにも使えます。
+定期実行を有効にするのは `.service` ではなく **`.timer`** である。`.service` はスケジュールを待たずに手動実行するときにも使える。
 
 ```bash
 # 登録済みtimerと次回実行予定を確認
@@ -69,7 +69,7 @@ sudo systemctl start backup.service
 sudo journalctl -u backup.service -n 50 --no-pager
 ```
 
-設定ファイルを変更した後は `daemon-reload` を実行します。timer の状態確認には `systemctl status backup.timer` も使えます。
+設定ファイルを変更した後は `daemon-reload` を実行する。timer の状態確認には `systemctl status backup.timer` も使える。
 
 ## よく使うスケジュール指定
 
@@ -83,13 +83,13 @@ sudo journalctl -u backup.service -n 50 --no-pager
 | `Persistent=true` | カレンダー式の実行時刻に停止していた場合、起動後に未実行分を補う（通常は1回） |
 | `RandomizedDelaySec=5min` | 実行時刻に最大5分のランダムな遅延を加える |
 
-`OnCalendar` の式は次のように検証できます。
+`OnCalendar` の式は次のように検証できる。
 
 ```bash
 systemd-analyze calendar 'Mon..Fri *-*-* 09:00:00'
 ```
 
-timer は厳密なリアルタイム実行を保証する仕組みではありません。実行タイミングに許容できる遅れがあるか、時刻同期やジョブの所要時間を考慮してください。
+timer は厳密なリアルタイム実行を保証する仕組みではない。実行タイミングに許容できる遅れがあるか、時刻同期やジョブの所要時間を考慮すること。
 
 ## cron と比べた利点
 
@@ -99,13 +99,13 @@ timer は厳密なリアルタイム実行を保証する仕組みではあり�
 - **実行条件や制限を設定できる**：ユーザー、環境、CPU・メモリ制限などを `.service` 側にまとめられる。
 - **構成管理に載せやすい**：ユニットファイルを Git や Ansible などで管理できる。
 
-一方、cron は設定が簡単で、既存の運用や共通基盤に組み込まれている場合も多いです。簡単な個人用ジョブや cron が標準の環境では、cron を使い続けても問題ありません。
+一方、cron は設定が簡単で、既存の運用や共通基盤に組み込まれている場合も多い。簡単な個人用ジョブや cron が標準の環境では、cron を使い続けても問題ない。
 
 ## 本番環境で timer を使う方針
 
-本番環境の定期ジョブでは、今後 systemd timer を標準として使う方針です。導入時は、少なくとも次を確認すると運用しやすくなります。
+本番環境の定期ジョブでは、今後 systemd timer を標準として使う方針である。導入時は、少なくとも次を確認すると運用しやすくなる。
 
-1. **失敗を検知する**：ログを見るだけでなく、必要に応じて監視・通知につなぐ。`OnFailure=` で失敗時に別ユニットを起動する構成も可能です。
+1. **失敗を検知する**：ログを見るだけでなく、必要に応じて監視・通知につなぐ。`OnFailure=` で失敗時に別ユニットを起動する構成も可能である。
 2. **実行ユーザーを明示する**：必要以上の権限で動かさず、`User=` や `Group=` を検討する。
 3. **多重実行や所要時間を考慮する**：前回処理が終わる前に次の実行時刻が来るケースを設計・テストする。
 4. **必要ならリソースを制限する**：`.service` で `MemoryMax=`、`CPUQuota=`、`Nice=` などを検討する。
@@ -125,7 +125,7 @@ sudo journalctl -u backup.service -n 50 --no-pager
 
 ## まとめ
 
-systemd timer は cron に代わる、Linux の定期実行の選択肢です。cron より設定ファイルは増えますが、ログ・サービス管理・実行環境の設定を systemd にまとめられます。すべてのケースで cron より優れているわけではありませんが、本番環境の定期ジョブでは timer を標準にする方針は、systemd を使うLinux環境なら妥当な選択です。
+systemd timer は cron に代わる、Linux の定期実行の選択肢である。cron より設定ファイルは増えるが、ログ・サービス管理・実行環境の設定を systemd にまとめられる。すべてのケースで cron より優れているわけではないが、本番環境の定期ジョブでは timer を標準にする方針は、systemd を使うLinux環境なら妥当な選択である。
 
 ## 参考情報
 
