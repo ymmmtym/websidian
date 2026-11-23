@@ -262,7 +262,7 @@ OS ごとの確認手段は次のとおり。
 - **サーバー証明書のSAN**：名前解決に使うFQDNと、IPアドレス直接アクセス用のIPの両方を入れておくと再発行の手間が減る。
 
   ```bash
-  mkcert myserver.home.arpa "*.myserver.home.arpa" 192.168.1.50
+  mkcert myserver.home.arpa "*.myserver.home.arpa" 192.0.2.50
   ```
 
 - **リバースプロキシでの一括終端**：Nginx / Caddy / Traefik の1台で受けて、配下の各サービスへはHTTPで流す構成にすると、証明書の更新は1か所で済む。
@@ -294,7 +294,7 @@ openssl x509 -in "$(mkcert -CAROOT)/rootCA.pem" -noout -fingerprint -sha256
 openssl x509 -in "$(mkcert -CAROOT)/rootCA.pem" -noout -subject -dates
 
 # 証明書の発行（FQDN + ワイルドカード + IP）
-mkcert myserver.home.arpa "*.myserver.home.arpa" 192.168.1.50
+mkcert myserver.home.arpa "*.myserver.home.arpa" 192.0.2.50
 
 # 発行された証明書のSAN確認
 openssl x509 -in myserver.home.arpa+2.pem -noout -ext subjectAltName
