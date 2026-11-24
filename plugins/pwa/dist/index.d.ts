@@ -6,6 +6,7 @@ export interface PWAOptions {
   display?: "fullscreen" | "standalone" | "minimal-ui" | "browser"
   precache?: boolean
   icon?: string
+  retire?: boolean
 }
 
 export interface ManifestIcon {
@@ -41,6 +42,8 @@ export declare function renderIcon(
   size: number,
   opts: { background: string; padding?: number },
 ): Promise<Buffer>
+
+export declare function buildRetirementWorker(): string
 
 export declare function buildServiceWorker(args: {
   cfg: GlobalConfiguration

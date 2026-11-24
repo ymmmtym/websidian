@@ -15,6 +15,7 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
   - Service Worker は同一オリジンの GET だけを扱い、ページは network-first、それ以外は stale-while-revalidate。キャッシュ名は `ctx.buildId` を含むのでデプロイのたびに入れ替わる。
   - `--serve`（開発サーバー）では Service Worker を登録しない。WebSocket によるリロードと競合するため。
   - アイコンは `quartz/static/icon.png` から `sharp` で生成する。白抜きロゴなので、地色は `backgroundColor` ではなく `themeColor` を使う（白地に白で消えるため）。
+  - PWA をやめるときは、プラグインを外すだけでなく `retire: true` にして 1 回デプロイする。訪問者のブラウザに残った Service Worker は、配信を止めても 404 では消えず動き続ける（キャッシュから古い内容を返し続ける）。`retire: true` は同じ `/sw.js` の URL で「自分自身を unregister し、`pwa-` キャッシュを削除して制御下のタブを再読み込みする」Worker を返すので、次の訪問で確実に撤去できる。`retire: true` の間は manifest も登録スクリプトも出さない。十分に行き渡ったら（目安 1〜2 か月）プラグインを外す。
 - タブ UI は採用していない（`@quartz-community/stacked-pages` は `enabled: false`）。以前は上部の横タブバーとして使っていたが、不要になったため無効化した。再有効化する場合は `quartz.config.yaml` の `stacked-pages` を `enabled: true` に戻す（見た目はプラグイン標準の左右の縦タブになる）。
 - `public/`（ビルド成果物）と `node_modules/` はコミットしない。
 

@@ -1,6 +1,12 @@
 import test, { describe } from "node:test"
 import assert from "node:assert"
-import { basePathOf, buildManifest, buildServiceWorker } from "./dist/index.js"
+import {
+  basePathOf,
+  buildManifest,
+  buildRetirementWorker,
+  buildServiceWorker,
+  PWA,
+} from "./dist/index.js"
 
 const domainRoot = { baseUrl: "websidian.example.com", pageTitle: "Websidian", locale: "ja-JP" }
 const projectPage = {
@@ -104,3 +110,40 @@ describe("buildServiceWorker", () => {
     assert.match(sw, /if \(url\.pathname\.endsWith\("\/sw\.js"\)\) return/)
   })
 })
+
+describe("retirement", () => {
+  test("serves a worker that unregisters itself and drops the plugin's caches", () => {
+    const sw = buildRetirementWorker()
+    assert.match(sw, /await self\.registration\.unregister\(\)/)
+    assert.match(sw, /key\.startsWith\(CACHE_PREFIX\)\)\.map\(\(key\) => caches\.delete\(key\)\)/)
+    // A worker that still intercepts would keep the site behind stale content on the way out.
+    assert.doesNotMatch(sw, /addEventListener\("fetch"/)
+  })
+
+  test("replaces the real worker at the same URL so installed registrations are reached", () => {
+    const sw = buildServiceWorker({ cfg: domainRoot, buildId: "abc123", options: { retire: true } })
+    assert.strictEqual(sw, buildRetirementWorker())
+  })
+
+  test("stops advertising the manifest and registration while retiring", () => {
+    const plugin = PWA({ retire: true })
+    assert.deepStrictEqual(plugin.externalResources(wrap(domainRoot)), {})
+  })
+
+  test("the real plugin still advertises both", () => {
+    const resources = PWA({}).externalResources(wrap(domainRoot))
+    assert.strictEqual(resources.additionalHead!.length, 1)
+    assert.strictEqual(resources.js!.length, 1)
+  })
+
+  test("does not register the worker on the dev server", () => {
+    const resources = PWA({}).externalResources(wrap(domainRoot, true))
+    assert.strictEqual(resources.additionalHead!.length, 1)
+    assert.strictEqual(resources.js, undefined)
+  })
+})
+
+/** `ctx.cfg.configuration` holds the site settings; `ctx.argv.serve` marks the dev server. */
+function wrap(configuration: object, serve = false) {
+  return { cfg: { configuration }, argv: { serve } } as never
+}

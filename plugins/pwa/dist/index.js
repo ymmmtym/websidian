@@ -12,6 +12,7 @@ const DEFAULTS = {
   display: "standalone",
   precache: true,
   icon: "quartz/static/icon.png",
+  retire: false,
 }
 
 /** Path prefix the site is served under ("" for a domain root, "/repo" for a project page). */
@@ -88,8 +89,40 @@ export async function renderIcon(iconPath, size, { background, padding = 0 }) {
     .toBuffer()
 }
 
+/**
+ * A worker that removes itself and the caches it owns. Emitted INSTEAD of the real worker when
+ * `retire` is set, so a rollback can reach browsers that already installed one: removing the
+ * plugin stops publishing `/sw.js`, and a 404 there leaves the old worker controlling the site
+ * until the browser happens to purge it. Serving this at the same URL retires it on the next
+ * navigation while the registration is still intact.
+ */
+export function buildRetirementWorker() {
+  return `const CACHE_PREFIX = "pwa-"
+
+self.addEventListener("install", () => {
+  self.skipWaiting()
+})
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys()
+      await Promise.all(
+        keys.filter((key) => key.startsWith(CACHE_PREFIX)).map((key) => caches.delete(key)),
+      )
+      await self.registration.unregister()
+      // Reload controlled tabs so they stop running behind a worker that is on its way out.
+      const clients = await self.clients.matchAll({ type: "window" })
+      await Promise.all(clients.map((client) => client.navigate(client.url).catch(() => {})))
+    })(),
+  )
+})
+`
+}
+
 export function buildServiceWorker({ cfg, options = {}, buildId }) {
   const opts = { ...DEFAULTS, ...options }
+  if (opts.retire) return buildRetirementWorker()
   const base = basePathOf(cfg)
   const cacheName = `pwa-${buildId}`
   const precache = [
@@ -228,6 +261,10 @@ export const PWA = (userOptions = {}) => {
     name: "PWA",
     async *emit(ctx) {
       const { cfg } = ctx
+      if (options.retire) {
+        yield await write(ctx, "sw.js", buildRetirementWorker())
+        return
+      }
       const iconPath = path.resolve(REPO_ROOT, options.icon)
       // Icons draw the logo in white, so the plate is the brand colour rather than the
       // near-white splash background, which would leave the glyph invisible.
@@ -260,6 +297,9 @@ export const PWA = (userOptions = {}) => {
       return null
     },
     externalResources(ctx) {
+      // A retiring deployment only serves the worker that shuts the old one down. Advertising a
+      // manifest would invite fresh installs of a PWA that is being withdrawn.
+      if (options.retire) return {}
       const resources = { additionalHead: [() => headTags(ctx.cfg.configuration, options)] }
       // The dev server reloads through its own websocket; a worker in front of it only gets in the way.
       if (ctx.argv.serve) return resources
