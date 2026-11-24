@@ -11,6 +11,8 @@ content/draft/
 .replit
 replit.nix
 .quartz/
+# ローカルプラグインの resolved は絶対パスで書かれ、別マシンでは解決できない
+quartz.lock.json
 quartz/cli/tui/dist/
 .turbo/
 

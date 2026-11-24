@@ -1,0 +1,59 @@
+{
+  "name": "pwa",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Progressive Web App support: web app manifest, icons, and an offline service worker.",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "peerDependencies": {
+    "@quartz-community/utils": "^1.0.0",
+    "preact": "^10.0.0",
+    "sharp": "^0.34.0 || ^0.35.0"
+  },
+  "quartz": {
+    "name": "pwa",
+    "displayName": "PWA",
+    "description": "Web app manifest, icons, and an offline service worker",
+    "category": "emitter",
+    "version": "1.0.0",
+    "quartzVersion": ">=5.1.0",
+    "defaultOrder": 80,
+    "defaultEnabled": true,
+    "defaultOptions": {
+      "themeColor": "#284b63",
+      "backgroundColor": "#faf8f8"
+    },
+    "configSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "themeColor": {
+          "type": "string",
+          "description": "Theme colour for the manifest and the browser UI."
+        },
+        "backgroundColor": {
+          "type": "string",
+          "description": "Splash screen background colour for the installed app."
+        },
+        "display": {
+          "type": "string",
+          "enum": [
+            "fullscreen",
+            "standalone",
+            "minimal-ui",
+            "browser"
+          ],
+          "description": "Display mode of the installed app."
+        },
+        "precache": {
+          "type": "boolean",
+          "description": "Precache the start URL so the site opens offline after the first visit."
+        }
+      }
+    }
+  }
+}
