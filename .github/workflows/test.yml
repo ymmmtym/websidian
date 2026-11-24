@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0 # ビルドが git の履歴から作成日・更新日を取得するため
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
           cache: npm
