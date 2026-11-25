@@ -6,7 +6,7 @@
   "packageRules": [
     {
       "matchPackageNames": ["typescript"],
-      "allowedVersions": "<6"
+      "allowedVersions": "<7"
     },
     {
       "matchPackageNames": ["@quartz-themes/core"],
