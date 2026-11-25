@@ -37,3 +37,18 @@
     word-break: normal;
   }
 }
+
+// @quartz-themes/core は `:root:root` / `:root:root[saved-theme="dark"]` で
+// --highlight を黄色 (rgba(255,208,0,.4)) に上書きするため、quartz.config.yaml の
+// theme.colors.highlight が効かない。ダークモードでは内部リンクやタグの黄色背景に
+// 紫の文字が乗り、コントラストが 3:1 を割る。テーマの規則より詳細度を上げて戻す。
+:root:root:root:root {
+  --highlight: rgba(143, 159, 169, 0.15);
+}
+
+// テーマの `body a.internal-link` は背景を `rgb(from var(--highlight) r g b / 0.3)`
+// として alpha を 0.3 に固定する。上で戻した値の 0.15 をそのまま使いたいので明示する。
+html body a.internal-link,
+html body a.internal {
+  background-color: var(--highlight);
+}
