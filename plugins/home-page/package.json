@@ -11,7 +11,7 @@
   "main": "./dist/index.js",
   "peerDependencies": {
     "@quartz-community/utils": "^1.0.0",
-    "preact": "^10.0.0"
+    "preact": "^10.0.0 || ^11.0.0"
   },
   "quartz": {
     "name": "home-page",
