@@ -9,7 +9,13 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 - トップページ（`/`）は `plugins/home-page/` のローカルプラグインがビルド時に生成する。`content/index.md` は置かない。
 - 下書きは `content/draft/` に置く。`.gitignore` と `quartz.config.yaml` の `ignorePatterns` で除外しており、Git にもサイトにも出ない。
 - Obsidian ノート用の OpenCode コマンドは `.opencode/commands/obsidian/`（`chat` / `check` / `publish`）。パスはリポジトリ直下の `content/` を前提にする。
-- プラグインは npm パッケージ（`@quartz-community/*`, `@quartz-themes/*`）または `plugins/` 配下のローカルプラグイン（`home-page`）。設定に追加したら `npx quartz plugin install` を実行する。
+- プラグインは npm パッケージ（`@quartz-community/*`, `@quartz-themes/*`）または `plugins/` 配下のローカルプラグイン（`home-page`, `pwa`）。設定に追加したら `npx quartz plugin install` を実行する。
+- PWA 対応は `plugins/pwa/` のローカルプラグイン。`manifest.webmanifest`、アイコン一式、Service Worker をビルド時に出力する。サイトのコードには手を入れず、`externalResources` で `<head>` のタグと登録スクリプトだけを足す。
+  - ローカルプラグインは `dist/index.js` と `dist/index.d.ts` の両方が要る。`index.d.ts` が無いと `quartz plugin install` が「no dist/index.d.ts found」でスキップし、`externalResources` が呼ばれずタグが出ない。
+  - Service Worker は同一オリジンの GET だけを扱い、ページは network-first、それ以外は stale-while-revalidate。キャッシュ名は `ctx.buildId` を含むのでデプロイのたびに入れ替わる。
+  - `--serve`（開発サーバー）では Service Worker を登録しない。WebSocket によるリロードと競合するため。
+  - アイコンは `quartz/static/icon.png` から `sharp` で生成する。白抜きロゴなので、地色は `backgroundColor` ではなく `themeColor` を使う（白地に白で消えるため）。
+  - PWA をやめるときは、プラグインを外すだけでなく `retire: true` にして 1 回デプロイする。訪問者のブラウザに残った Service Worker は、配信を止めても 404 では消えず動き続ける（キャッシュから古い内容を返し続ける）。`retire: true` は同じ `/sw.js` の URL で「自分自身を unregister し、`pwa-` キャッシュを削除して制御下のタブを再読み込みする」Worker を返すので、次の訪問で確実に撤去できる。`retire: true` の間は manifest も登録スクリプトも出さない。十分に行き渡ったら（目安 1〜2 か月）プラグインを外す。
 - タブ UI は採用していない（`@quartz-community/stacked-pages` は `enabled: false`）。以前は上部の横タブバーとして使っていたが、不要になったため無効化した。再有効化する場合は `quartz.config.yaml` の `stacked-pages` を `enabled: true` に戻す（見た目はプラグイン標準の左右の縦タブになる）。
 - `public/`（ビルド成果物）と `node_modules/` はコミットしない。
 
@@ -17,7 +23,7 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 
 - Obsidian ノート用: `/obsidian/chat`（要約して `content/` に保存）, `/obsidian/check`（読み取り専用の監査。`draft/` も対象）, `/obsidian/publish`（`draft/` → `content/` へ昇格）
 - プレビュー: `npx quartz build --serve` → <http://localhost:8080>
-- テスト: `npm test`（Quartz 本体のユニットテストのみ。`content/` は対象外）
+- テスト: `npm test`（Quartz 本体と `plugins/*/*.test.ts`。`content/` は対象外）
 - 型・整形: `npm run check` / 自動修正は `npm run format`
 - PR を出すと `.github/workflows/test.yml` が `npm run check` → `npm test` → `npx quartz build` を実行する。ローカルで確認する場合もこの3つを通す。
 

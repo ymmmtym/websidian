@@ -258,6 +258,11 @@ plugins:
     order: 50
   - source: ./plugins/home-page
     enabled: true
+  - source: ./plugins/pwa
+    enabled: true
+    options:
+      themeColor: "#284b63"
+      backgroundColor: "#faf8f8"
 layout:
   groups:
     toolbar:
