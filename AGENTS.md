@@ -9,6 +9,7 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 - トップページ（`/`）は `plugins/home-page/` のローカルプラグインがビルド時に生成する。`content/index.md` は置かない。
 - 下書きは `content/draft/` に置く。`.gitignore` と `quartz.config.yaml` の `ignorePatterns` で除外しており、Git にもサイトにも出ない。
 - Obsidian ノート用の OpenCode コマンドは `.opencode/commands/obsidian/`（`chat` / `check` / `publish`）。パスはリポジトリ直下の `content/` を前提にする。
+- 同じ手順を OpenHands からも使えるよう、`.agents/skills/obsidian-notes/` にスキルを置いている。手順の実体は `.opencode/commands/obsidian/` 側にあり、スキルはそれを参照するだけ。手順を変えるときは `.opencode/` を編集する（両方に書かない）。
 - プラグインは npm パッケージ（`@quartz-community/*`, `@quartz-themes/*`）または `plugins/` 配下のローカルプラグイン（`home-page`, `pwa`）。設定に追加したら `npx quartz plugin install` を実行する。
 - PWA 対応は `plugins/pwa/` のローカルプラグイン。`manifest.webmanifest`、アイコン一式、Service Worker をビルド時に出力する。サイトのコードには手を入れず、`externalResources` で `<head>` のタグと登録スクリプトだけを足す。
   - ローカルプラグインは `dist/index.js` と `dist/index.d.ts` の両方が要る。`index.d.ts` が無いと `quartz plugin install` が「no dist/index.d.ts found」でスキップし、`externalResources` が呼ばれずタグが出ない。
@@ -21,7 +22,7 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 
 ## コマンド
 
-- Obsidian ノート用: `/obsidian/chat`（要約して `content/` に保存）, `/obsidian/check`（読み取り専用の監査。`draft/` も対象）, `/obsidian/publish`（`draft/` → `content/` へ昇格）
+- Obsidian ノート用: `/obsidian/chat`（要約して `content/` に保存）, `/obsidian/check`（読み取り専用の監査。`draft/` も対象）, `/obsidian/publish`（`draft/` → `content/` へ昇格）。OpenHands では `obsidian-notes` スキル経由で同じ手順を使う
 - プレビュー: `npx quartz build --serve` → <http://localhost:8080>
 - テスト: `npm test`（Quartz 本体と `plugins/*/*.test.ts`。`content/` は対象外）
 - 型・整形: `npm run check` / 自動修正は `npm run format`
