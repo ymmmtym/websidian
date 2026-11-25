@@ -39,6 +39,11 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 - Mermaid は `diagramRenderer: pele` を使う（既定の `mermaid` は不可）。mermaid.js 版は描画前に `innerText` を `innerHTML` へ書き戻すため、図の中の `<token>` のような山カッコが HTML タグとして解釈され、`Syntax error in text` になる。`pele` はこの往復をせず `<br/>` も改行として描画する。プラグイン側でも mermaid.js は非推奨。
 - `quartz.config.yaml` の `configuration.baseUrl` は公開 URL と一致させる（現在 `websidian.yumenomatayume.net`）。カスタムドメインのルート配信なのでパスは含めない。ドメインを変えたら更新する。
 - ノートを追加してもトップページのリンク一覧は更新不要（`plugins/home-page/` がビルド時に生成する）。
+- `renovate.json` の `packageRules` で `typescript`（<7）と `@quartz-themes/core`（<3）の major 更新を抑止している。解除する条件は次の通り。
+  - `typescript` 7 以降: TS7 は `moduleResolution: node10` を削除済みで `ignoreDeprecations` も効かない。さらに JavaScript API（`import ts from "typescript"`）を提供しないため `quartz/plugins/emitters/componentResources.test.ts` が型解決できない。上流 Quartz の対応待ち。TS6 は移行済み（`moduleResolution: bundler` + `paths`）。
+  - `@quartz-themes/core` 3 以降: v3 は Obsidian コミュニティテーマをビルド時に変換する方式に変わり、`theme: default` の解釈も変わる。本サイトは v2 の `default` テーマ前提で色とフォントを組んでいるため、v3 にすると見た目が大きく変わる（実測で本番比 58% のピクセル差分）。Quartz 5.2.2 自体は v3 と互換。上げるならテーマ設定の作り直しが必要。
+- `tsconfig.json` は `moduleResolution: bundler`。`paths` の 2 エントリ（`micromorph`, `remark-parse/lib`）は、`exports` を尊重する解決で型が見つからないための回避。TS6 へ上げた際に必要になった。
+- 例外として `quartz/plugins/builtins/frontmatter.ts` の js-yaml の import だけは `import * as yaml` に変えている。js-yaml v5 が default export を廃止したため。v4 でも動くので戻さない。
 
 ## デプロイ
 

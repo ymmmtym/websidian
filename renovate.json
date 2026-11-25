@@ -2,5 +2,15 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>ymmmtym/.github:renovate-config"
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
+    },
+    {
+      "matchPackageNames": ["@quartz-themes/core"],
+      "allowedVersions": "<3"
+    }
   ]
 }
