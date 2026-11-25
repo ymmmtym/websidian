@@ -39,6 +39,10 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 - Mermaid は `diagramRenderer: pele` を使う（既定の `mermaid` は不可）。mermaid.js 版は描画前に `innerText` を `innerHTML` へ書き戻すため、図の中の `<token>` のような山カッコが HTML タグとして解釈され、`Syntax error in text` になる。`pele` はこの往復をせず `<br/>` も改行として描画する。プラグイン側でも mermaid.js は非推奨。
 - `quartz.config.yaml` の `configuration.baseUrl` は公開 URL と一致させる（現在 `websidian.yumenomatayume.net`）。カスタムドメインのルート配信なのでパスは含めない。ドメインを変えたら更新する。
 - ノートを追加してもトップページのリンク一覧は更新不要（`plugins/home-page/` がビルド時に生成する）。
+- `renovate.json` の `packageRules` で `typescript`（<6）と `@quartz-themes/core`（<3）の major 更新を抑止している。どちらも `quartz/`（上流コピー）側の制約で、このリポジトリだけでは直せない。解除する条件は次の通り。
+  - `typescript` 6 以降: `tsconfig.json` の `moduleResolution: node` が TS6 で deprecated エラー、TS7 で削除。`moduleResolution: node16` にすると相対 import の拡張子必須エラーが大量に出て、`bundler` にすると `micromorph` / `remark-parse/lib` の型解決が壊れる。`ignoreDeprecations` も TS6 が `"6.0"`、TS5.9 が `"5.0"` しか受け付けず併存できない。さらに TS7 は JavaScript API（`import ts from "typescript"`）を提供しないため `quartz/plugins/emitters/componentResources.test.ts` が動かない。上流 Quartz の対応待ち。
+  - `@quartz-themes/core` 3 以降: `quartzVersion: ">=5.2.0"` を要求するが、このリポジトリは Quartz 5.1.0。CI では互換性チェックがエラーになる（ローカルは警告のみ）。Quartz を 5.2 以降へ上げれば解除できる。
+- 例外として `quartz/plugins/builtins/frontmatter.ts` の js-yaml の import だけは `import * as yaml` に変えている。js-yaml v5 が default export を廃止したため。v4 でも動くので戻さない。
 
 ## デプロイ
 
