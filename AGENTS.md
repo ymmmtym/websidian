@@ -9,7 +9,7 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 - トップページ（`/`）は `plugins/home-page/` のローカルプラグインがビルド時に生成する。`content/index.md` は置かない。
 - 下書きは `content/draft/` に置く。`.gitignore` と `quartz.config.yaml` の `ignorePatterns` で除外しており、Git にもサイトにも出ない。
 - Obsidian ノート用の OpenCode コマンドは `.opencode/commands/obsidian/`（`chat` / `check` / `publish`）。パスはリポジトリ直下の `content/` を前提にする。
-- 同じ手順を OpenHands からも使えるよう、`.agents/skills/obsidian-notes/` にスキルを置いている。手順の実体は `.opencode/commands/obsidian/` 側にあり、スキルはそれを参照するだけ。手順を変えるときは `.opencode/` を編集する（両方に書かない）。
+- 同じ手順は `.agents/skills/obsidian-notes/` のスキルからも使える。スキルは手順を複製せず `.opencode/commands/obsidian/` を参照するだけ。手順を変えるときは `.opencode/` を編集する（両方に書かない）。配置のルールは [エージェント設定](#エージェント設定)を参照。
 - プラグインは npm パッケージ（`@quartz-community/*`, `@quartz-themes/*`）または `plugins/` 配下のローカルプラグイン（`home-page`, `pwa`）。設定に追加したら `npx quartz plugin install` を実行する。
 - PWA 対応は `plugins/pwa/` のローカルプラグイン。`manifest.webmanifest`、アイコン一式、Service Worker をビルド時に出力する。サイトのコードには手を入れず、`externalResources` で `<head>` のタグと登録スクリプトだけを足す。
   - ローカルプラグインは `dist/index.js` と `dist/index.d.ts` の両方が要る。`index.d.ts` が無いと `quartz plugin install` が「no dist/index.d.ts found」でスキップし、`externalResources` が呼ばれずタグが出ない。
@@ -20,9 +20,22 @@ Obsidian Vault のノートを Quartz v5 で静的サイト化し、GitHub Pages
 - タブ UI は採用していない（`@quartz-community/stacked-pages` は `enabled: false`）。以前は上部の横タブバーとして使っていたが、不要になったため無効化した。再有効化する場合は `quartz.config.yaml` の `stacked-pages` を `enabled: true` に戻す（見た目はプラグイン標準の左右の縦タブになる）。
 - `public/`（ビルド成果物）と `node_modules/` はコミットしない。
 
+## エージェント設定
+
+エージェント向けの設定は次の 2 つだけを置く。特定のエージェント専用のディレクトリや別名ファイルは作らない。
+
+| 種類         | 場所                             |
+| ------------ | -------------------------------- |
+| コンテキスト | `AGENTS.md`                      |
+| スキル       | `.agents/skills/<name>/SKILL.md` |
+
+- `.agents/skills` は Copilot（CLI / VS Code / coding agent）、Codex、OpenCode が直接読む共通の置き場。`.claude/skills` や `.github/skills` に別名を張るとスキルが二重管理になるので置かない。
+- ツール固有のスキル置き場（`.claude/skills` など）があるリポジトリでは、`.agents/skills` へ移す。
+- `.opencode/commands/` は OpenCode 固有のコマンド定義なので、この統一の対象外。
+
 ## コマンド
 
-- Obsidian ノート用: `/obsidian/chat`（要約して `content/` に保存）, `/obsidian/check`（読み取り専用の監査。`draft/` も対象）, `/obsidian/publish`（`draft/` → `content/` へ昇格）。OpenHands では `obsidian-notes` スキル経由で同じ手順を使う
+- Obsidian ノート用: `/obsidian/chat`（要約して `content/` に保存）, `/obsidian/check`（読み取り専用の監査。`draft/` も対象）, `/obsidian/publish`（`draft/` → `content/` へ昇格）。スキル（`.agents/skills/obsidian-notes`）経由でも同じ手順を使う
 - プレビュー: `npx quartz build --serve` → <http://localhost:8080>
 - テスト: `npm test`（Quartz 本体と `plugins/*/*.test.ts`。`content/` は対象外）
 - 型・整形: `npm run check` / 自動修正は `npm run format`
